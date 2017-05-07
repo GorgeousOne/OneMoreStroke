@@ -1,26 +1,20 @@
 package control;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.JFrame;
-
 import view.components.Counter;
 import view.drawables.*;
 import view.window.Camera;
-import view.window.Panel;
-import view.window.Window;
+import view.window.Window2;
 
-public class Game {
+public class Game2 {
 
-	private Window frame;			//JFrame
-	private Panel panel;			//JPanel zum Malen
+	private Window2 frame;			//JFrame
 	private KeyInput keyInput;
 	private Camera camera;
 	
@@ -29,59 +23,46 @@ public class Game {
 	private Tail tail;
 	private Rope rope;
 	private DashedRing ring;
-	private ArrayList<Node> Nodes;
+	private ArrayList<Node> nodes;
 
 	private Counter counter;
 	
 	private int fWidth, fHeight;	//Groesse des Frames fuer JPanel
-	private int fps;				//legt Updates aller Objekte/sec fest
 	
-	public Game() {
+	public Game2(Window2 w) {
 
-		fps = 60;
+		frame = w;
+		frame.clear();
+		frame.addKeyListener(keyInput = new KeyInput());
 
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		fHeight = (int) screenSize.getHeight();
-		fWidth = (int) (fHeight * 5/8);						//480, 768
+		fWidth = w.getContentPane().getWidth();
+		fHeight = w.getContentPane().getHeight();
 		
 		camera = new Camera();
-		
-		panel = new Panel(fWidth, fHeight);					//Panel vor Window initialisieren
-		panel.addCamera(camera);
-		
-		frame = new Window("One More Stroke");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setResizable(false);
-		frame.setPreferredSize(new Dimension(fWidth + 6, fHeight + 29));
-		frame.setLocation((int) (screenSize.getWidth()/2 - fWidth/2) , 0);
-		
-		frame.add(panel);	//das bleibt genau hinter der Deklarierung
-		frame.addKeyListener(keyInput = new KeyInput());
-		frame.loadIconImage("/res/images/Icon.png");
-		frame.activate();
+		frame.addCamera(camera);
 
 		ball = new Ball(0, Color.WHITE, fWidth);
-		ball.setSpeed(fWidth/fps * 1.2);
+		ball.setSpeed(fWidth/frame.getFps() * 1.3);
 		
 		counter = new Counter(fWidth, "/res/fonts/terminat.ttf", (float) fWidth/10);
 		counter.setLocation(fWidth/16, fWidth/40);
-		counter.setPointDistance(ball.getSpeed() * fps/3);		//wenn Ball gerade fliegt, dauert ein Score-Punkt 1/2s
-		
+		counter.setPointDistance(ball.getSpeed() * frame.getFps()/3);		//wenn Ball gerade fliegt, dauert ein Score-Punkt 1/2s
+
 		tail = new Tail(1, Color.WHITE, ball, 200);
 		rope = new Rope(3, Color.WHITE, ball.getPos(), fWidth/150);
 		ring = new DashedRing(4, Drawable.ORANGE, 64, fWidth/200);
 		wall = new Wall(5, Drawable.RED, fWidth, fHeight, camera);
+
+		frame.addDrawable(ball);
+		frame.addDrawable(tail);
+		frame.addDrawable(rope);
+		frame.addDrawable(ring);
+		frame.addDrawable(wall);
+		frame.add(counter);
 		
-		panel.addDrawable(ball);
-		panel.addDrawable(tail);
-		panel.addDrawable(rope);
-		panel.addDrawable(ring);
-		panel.addDrawable(wall);
-		panel.add(counter);
-		
-		Nodes = new ArrayList<>();
+		nodes = new ArrayList<>();
 		spawnNode();
-		
+
 		loop();
 	}
 	
@@ -92,18 +73,34 @@ public class Game {
 			@Override
 			public void run() {
 				
-				ball.update(getSolids());
-				counter.update(ball.getPos());
+				//laesst Ball um Node kreisen, wenn SPACE gedrueckt
+				if(keyInput.isPressed(KeyEvent.VK_SPACE) && !ball.isInOrbit())
+					ball.enterOrbit(getVisNodes());
+					//ball.rotate(0.1);
+				else if(!keyInput.isPressed(KeyEvent.VK_SPACE) && ball.isInOrbit()) {
+					ball.leaveOrbit(getSolids());
+					ring.setVisibility(false);
+				}
 				
 				if(ball.isInOrbit() && !rope.isConnected())
 					rope.connectTo(ball.getNode());
 				else if(!ball.isInOrbit() && rope.isConnected())
 					rope.disconnect();
+				
+				if(ball.isSpinning() && !ring.isVisible()) {
+					//mache neuen gestrichelten Ring auf Radius von Ball um Balls Node
+					ring.setPos(ball.getNode().getPos());
+					ring.setScale(ball.getSpinRadius() / 100, ball.getSpinRadius() / 100);
+					ring.setVisibility(true);
+				}
+				
+				ball.update(getSolids());
+				counter.update(ball.getPos());
 			}
 		};
 		
-		Timer timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTask() {
+		Timer timer = new Timer(true);
+		timer.schedule(new TimerTask() {
 			
 			@Override
 			public void run() {
@@ -113,7 +110,7 @@ public class Game {
 				
 				//Spiel beenden bei crash;
 				if(ball.hasCrashed()) {
-					panel.clear();
+//					frame.clear();
 					t.interrupt();
 					timer.cancel();
 					return;
@@ -127,46 +124,28 @@ public class Game {
 					return;
 				}
 				
-				//laesst Ball um Node kreisen, wenn SPACE gedrueckt
-				if(keyInput.isPressed(KeyEvent.VK_SPACE) && !ball.isInOrbit())
-					ball.enterOrbit(getVisibleNodes());
-					//ball.rotate(0.1);
-				else if(!keyInput.isPressed(KeyEvent.VK_SPACE) && ball.isInOrbit()) {
-					ball.leaveOrbit(getSolids());
-					ring.setVisibility(false);
-				}
-				
 				ball.move2();
 				moveCamera();
 				
-				if(ball.isSpinning() && !ring.isVisible()) {
-					//mache neuen gestrichelten Ring auf Radius von Ball um Balls Node
-					ring.setPos(ball.getNode().getPos());
-					ring.setScale(ball.getSpinRadius() / 100, ball.getSpinRadius() / 100);
-					ring.setVisibility(true);
-				}
-				
 				//spawn immer neue Nodes
-				if(getVisibleNodes().contains(Nodes.get(Nodes.size()-1)))
+				if(getVisNodes().contains(nodes.get(nodes.size()-1)))
 					spawnNode();
 
-				for(Node n : Nodes)
-					//mache Node sichtbar, wenn er im Fenster ist
-					if(getVisibleNodes().contains(n)) {
-						if(!n.isVisible()) {
+				//upadte Nodes auf Sichtbarkeit und einfach so
+				for(Node n : nodes)
+					if(getVisNodes().contains(n)) {
+						if(!n.isVisible())
 							n.setVisibility(true);
-						}
-						n.update(fps);
-					}else
-						if(n.isVisible())
-							n.setVisibility(false);
+						n.update(frame.getFps());
+					}else if(n.isVisible())
+						n.setVisibility(false);
 				
-				rope.update(fps);
+				rope.update(frame.getFps());
 				wall.update();
-				tail.update(fps);
-				panel.repaint();
+				tail.update(frame.getFps());
+				frame.getPanel().repaint();
 			}
-		}, 0, 1000/fps);
+		}, 0, 1000/frame.getFps());
 			
 	}
 	
@@ -185,8 +164,9 @@ public class Game {
 		double posX, posY, scale;
 		
 		//ganz zu Anfang
-		if(Nodes.isEmpty()) {
+		if(nodes.isEmpty()) {
 			posX = fWidth/6 + (int) (Math.random() + 0.5) * fWidth*2/3;	//das ist halt links oder rechts, nicht Mitte
+			//posX = fWidth/2;
 			posY = -4*counter.getPointDistance();						
 			scale = fWidth/5000d;
 			
@@ -196,7 +176,7 @@ public class Game {
 		
 		//irgendwo random
 		}else {
-			Node lastNode = Nodes.get(Nodes.size()-1);
+			Node lastNode = nodes.get(nodes.size()-1);
 			//besteht aus begrenztem Wachstum * Math.random()
 			
 			double increasement = 0.4 - (0.4 - 0.1) * Math.pow(Math.E, -0.005 * counter.getScore());
@@ -204,21 +184,22 @@ public class Game {
 			scale += fWidth/500d * Math.random() * increasement;
 			
 			posX = fWidth*1/6d + Math.random() * fWidth*2/3d; //das ist 1/6 Rand zu beiden Seiten
+			//posX = fWidth/2;
 			posY = lastNode.getPos().getY() - Math.random() * fWidth*2/5d - fWidth*2/5d;
 			
 			n = new Node(2, Drawable.nextNeonColor(lastNode.getColor()));
 			n.setScale(scale, scale);
 			n.setPos(posX, posY);
 		}
-		Nodes.add(n);
-		panel.addDrawable(n);
+		nodes.add(n);
+		frame.addDrawable(n);
 	}
 	
 	//gibt Liste aller Nodes im Bildschirm zurück
-	public ArrayList<Node> getVisibleNodes() {
+	public ArrayList<Node> getVisNodes() {
 		ArrayList<Node> visNodes = new ArrayList<>();
 		
-		for(Node n : Nodes)
+		for(Node n : nodes)
 			if(camera.distance(n.getPos()) + n.getRadius() < Point2D.distance(0, 0, fWidth/2/camera.getZoom(),
 																					fHeight/2/camera.getZoom()))
 				visNodes.add(n);
@@ -228,7 +209,7 @@ public class Game {
 	public ArrayList<Drawable> getSolids() {
 		ArrayList<Drawable> solids = new ArrayList<>();
 		solids.add(wall);
-		solids.addAll(getVisibleNodes());
+		solids.addAll(getVisNodes());
 		return solids;
 	}
 }

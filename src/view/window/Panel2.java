@@ -7,38 +7,41 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Iterator;
 import javax.swing.JPanel;
 
 import view.drawables.Drawable;
 
-public class Panel extends JPanel{
+public class Panel2 extends JPanel{
 
 	private static final long serialVersionUID = 1L;
 
 	private ArrayList <Drawable> shapes;
-	private int fWidth, fHeight;
+
+ 	private int fWidth, fHeight;
 	private BufferedImage buffer;
 	private Camera camera;
 	
-	public Panel(int fWidth, int fHeight) {
-		
-		setSize(new Dimension(fWidth, fHeight));
-		setLayout(null);
-		
-		this.fWidth = fWidth;
-		this.fHeight = fHeight;
-		shapes = new ArrayList<>();
+	public Panel2() {
+		fWidth = fHeight = 1;
 		buffer = new BufferedImage(fWidth, fHeight, BufferedImage.TYPE_3BYTE_BGR);
+		shapes = new ArrayList<>();
 		camera = new Camera();
 	}
 
+	@Override
+	public void setSize(Dimension size) {
+		super.setSize(size);
+		fWidth = (int) size.getWidth();
+		fHeight = (int) size.getHeight();
+		
+		buffer = new BufferedImage(fWidth, fHeight, BufferedImage.TYPE_3BYTE_BGR);
+	}
+	
 	public ArrayList<Drawable> getDrawables() {return shapes;}
 	
 	public void addCamera(Camera camera) {this.camera = camera;}
 
 	public void addDrawable(Drawable d) {
-		
 		for(int i = 0; i < shapes.size(); i++) {
 			if(d.getLayer() >= shapes.get(i).getLayer()) {
 				shapes.add(i, d);
@@ -48,7 +51,9 @@ public class Panel extends JPanel{
 		shapes.add(d);
 	}
 		
-	public void removeDrawable(Drawable d) {shapes.remove(d);}
+	public void removeDrawable(Drawable d) {
+		shapes.remove(d);
+	}
 	
 	public void clear() {
 		shapes.clear();
@@ -58,7 +63,7 @@ public class Panel extends JPanel{
 	
 	@Override
 	public void paintComponent(Graphics g) {
-		
+
 		Graphics2D g2 = (Graphics2D) buffer.getGraphics();
 
 		g2.setColor(Color.BLACK);
@@ -71,23 +76,17 @@ public class Panel extends JPanel{
 		
 		g2.translate(fWidth/2 - camera.getX(),fHeight/2 -camera.getY());
 
-		Iterator<Drawable> iter = shapes.iterator();
-		
-		while(iter.hasNext()) {
-
+		System.out.println("+++++++");
+		for(Drawable d : shapes) {
 			try {
-				iter.next().fill(g2);
+				d.fill(g2);
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
-		
-//		for(Drawable d : shapes) {
-//			try {
-//				d.fill(g2);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
+		System.out.println("--------");
+		System.out.println();
+
 		g.drawImage(buffer, 0, 0, this);
 		g2.dispose();
 	}

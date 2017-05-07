@@ -7,16 +7,16 @@ import java.awt.geom.Point2D;
 
 public class Drawable {
 
-	public static final Color NEON_BLUE = new Color(36, 140, 240);
-	public static final Color NEON_YELLOW = new Color(255, 200, 0);
-	public static final Color NEON_LIGHT_BLUE = new Color(50, 200, 255);
-	public static final Color NEON_RED = new Color(255, 50, 150);
-	public static final Color NEON_GREEN = new Color(125, 174, 51);
-	public static final Color NEON_ORANGE = new Color(246, 130, 34);
-	public static final Color NEON_PURPLE = new Color(157, 63, 255);
+	public static final Color BLUE = new Color(36, 140, 240);
+	public static final Color YELLOW = new Color(255, 200, 0);
+	public static final Color LIGHT_BLUE = new Color(50, 200, 255);
+	public static final Color RED = new Color(255, 50, 150);
+	public static final Color GREEN = new Color(125, 174, 51);
+	public static final Color ORANGE = new Color(246, 130, 34);
+	public static final Color PURPLE = new Color(157, 63, 255);
 	
-	private static Color[] NEON_COLORS = {NEON_BLUE, NEON_YELLOW, NEON_LIGHT_BLUE, NEON_RED, 
-										  NEON_GREEN, NEON_ORANGE, NEON_PURPLE};
+	private static Color[] NEON_COLORS = {BLUE, YELLOW, LIGHT_BLUE, RED, 
+										  GREEN, ORANGE, PURPLE};
 	
 	protected Shape shape;
 	private Color color;
@@ -32,7 +32,7 @@ public class Drawable {
 		this.layer = layer;
 		this.color = Color.BLACK;
 		this.scale = new Point2D.Float(1f, 1f);
-		this.isVisible = false;
+		this.isVisible = true;
 
 		this.rotation = 0;
 		this.pos = new Point2D.Double(0, 0);
@@ -90,10 +90,12 @@ public class Drawable {
 			this.rotation += 2*Math.PI;
 	}
 	
-	public void fill(Graphics2D g2) {
+	public void fill(Graphics g) {
+
 		if(shape == null || !isVisible)
 			return;
 		
+		Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(color);
   		g2.fill(getShape());
 	}

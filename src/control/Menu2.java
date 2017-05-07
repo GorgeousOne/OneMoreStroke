@@ -7,46 +7,29 @@ import java.util.TimerTask;
 
 import view.components.Button;
 import view.drawables.Drawable;
-import view.window.Panel;
-import view.window.Window;
+import view.window.Window2;
 
-public class Menu {
+public class Menu2 {
 
-	private Window frame;
-	private Panel panel;
+	private Window2 frame;
 	private Button start;
 	
+	@SuppressWarnings("unused")
 	private int fWidth, fHeight;
 	
-	public Menu(Window w) {
+	public Menu2(Window2 w) {
 	
+		frame = w;
 		fWidth = w.getContentPane().getWidth();
 		fHeight = w.getContentPane().getHeight();
 
-		panel = new Panel(fWidth, fHeight);
-
-		frame = w;
-		frame.add(panel);
-		frame.setVisible(true);
-		
 		initStartButton();
-
+		
 		loop();
 	}
 	
-	private void loop() {
-		
-		Timer t = new Timer();
-		t.schedule(new TimerTask() {
-			
-			@Override
-			public void run() {
-				panel.repaint();
-			}
-		}, 0, 1000/60);
-	}
-	
 	private void initStartButton() {
+		
 		start = new Button();
 		start.setBackground(Drawable.RED);
 		start.setBounds(0, 0, fWidth/6, fWidth/6);
@@ -54,11 +37,20 @@ public class Menu {
 		start.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				panel.clear();
-				new Game();
+				new Game2(frame);
 			}
 		});
-		panel.add(start);
+		frame.addButton(start);
 	}
 	
+	private void loop() {
+		
+		Timer t = new Timer(true);
+		t.schedule(	new TimerTask() {
+			@Override
+			public void run() {
+				frame.repaint();
+			}
+		}, 0, 1000/frame.getFps());
+	}
 }

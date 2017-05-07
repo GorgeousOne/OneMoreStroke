@@ -2,6 +2,7 @@ package view.drawables;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
@@ -18,7 +19,6 @@ public class Tail extends Drawable{
 		
 		super(null, layer);
 		setColor(color);
-		setVisibility(true);
 		
 		this.ball = ball;
 		this.length = length;
@@ -33,13 +33,14 @@ public class Tail extends Drawable{
 	}
 	
 	@Override
-	public void fill(Graphics2D g2) {
+	public void fill(Graphics g) {
 		
 		if(stripe1.segments.size() < 2)
 			return;
 		
 		ArrayList<Point2D> segments = stripe1.segments;
 		
+		Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(getColor());
 		g2.setStroke(new BasicStroke(10, BasicStroke.CAP_BUTT, BasicStroke.CAP_ROUND));
 

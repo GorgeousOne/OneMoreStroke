@@ -14,7 +14,6 @@ public class Wall extends Drawable{
 		
 		super(createShape(fWidth, fHeight), layer);
 		setColor(color);
-		setVisibility(true);
 	
 		this.camera = camera;
 		
@@ -23,10 +22,10 @@ public class Wall extends Drawable{
 	}
 	
 	private static Area createShape(int fWidth, int fHeight) {
-		Area shape =   new Area(new Rectangle(-fWidth/2 - fWidth/40, -fHeight/2, fWidth/20, fHeight));
-		shape.subtract(new Area(new Rectangle(-fWidth/2 - fWidth/80, -fHeight/2, fWidth/80, fHeight)));
-		shape.add	  (new Area(new Rectangle(fWidth/2 - fWidth/40, -fHeight/2, fWidth/20, fHeight)));
-		shape.subtract(new Area(new Rectangle(fWidth/2, 			-fHeight/2, fWidth/80, fHeight)));
+		Area shape = new Area(new Rectangle(-fWidth/2 - fWidth/40, -fHeight/2, fWidth/80, fHeight));
+		shape.add	(new Area(new Rectangle(-fWidth/2,			   -fHeight/2, fWidth/40, fHeight)));
+		shape.add	(new Area(new Rectangle( fWidth/2 - fWidth/40, -fHeight/2, fWidth/40, fHeight)));
+		shape.add	(new Area(new Rectangle( fWidth/2 + fWidth/80, -fHeight/2, fWidth/80, fHeight)));
 		return shape;
 	}
 	public void update() {

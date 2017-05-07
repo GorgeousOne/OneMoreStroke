@@ -2,6 +2,7 @@ package view.drawables;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -17,6 +18,7 @@ public class Rope extends Drawable{
 	
 	public Rope(int layer, Color color, Point2D ballPos, float width) {
 		super(createShape(), layer);
+		setVisibility(false);
 		setColor(color);
 		setPos(ballPos);
 		
@@ -27,7 +29,7 @@ public class Rope extends Drawable{
 	}
 
 	private static Line2D createShape() {
-		return new Line2D.Double(0, 0, 100, 100);
+		return new Line2D.Double(0, 0, 0, 0);
 	}
 
 	public boolean isConnected() {return isConnected;}
@@ -55,11 +57,12 @@ public class Rope extends Drawable{
 	}
 	
 	@Override
-	public void fill(Graphics2D g2) {
+	public void fill(Graphics g) {
 		
 		if(!isVisible())
 			return;
-		
+
+		Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(getColor());
 		g2.setStroke(new BasicStroke(width));
 		g2.draw(line);

@@ -5,7 +5,6 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.io.IOException;
@@ -17,19 +16,17 @@ public class Counter extends JComponent{
 
 	private static final long serialVersionUID = 1L;
 	
-	private Point pos;
 	private int score;					//Score des Spielers/Balls
 	private Font font;					//Terminator2
 	private double pointDistance;		//Laenge zwischen 2 Score-Punkten
 	
 	public Counter(int fWidth, String fontPath, float fontSize) {
 		
-		pos = new Point();
 		pointDistance = 1;
 		score = 0;
 		font = loadFont(fontPath, fontSize);
 		
-		setBounds(0, 0, fWidth, (int) fontSize);
+		setBounds(0, 0, fWidth/2, font.getSize());
 	}
 	
 	public double getPointDistance() {return pointDistance;}
@@ -43,26 +40,13 @@ public class Counter extends JComponent{
 	}
 	
 	@Override
-	public void setLocation(int x, int y) {
-		pos.setLocation(x, y);
-		setBounds(0, 0, getWidth(), (int) y);
-	}
-	
-	@Override
-	 public void setLocation(Point p) {
-		pos = p;
-		setBounds(0, 0, (int) getBounds().getWidth(), (int) p.getY());
-	};
-	
-	@Override
 	public void paintComponent(Graphics g) {
 	
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); 
-		
+		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP); 
 		g2.setFont(font);
 		g2.setColor(Color.WHITE);
-		g2.drawString(Integer.toString(score), (int) pos.getX(), (int) pos.getY());
+		g2.drawString(Integer.toString(score), 0, font.getSize());
 	}
 
 	
