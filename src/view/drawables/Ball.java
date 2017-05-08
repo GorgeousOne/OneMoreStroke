@@ -100,15 +100,10 @@ public class Ball extends Drawable{
 			if(opposite > radius*getScale().getX() + n.getRadius())
 				availableNodes.add(n);
 			//wenn doch, halte die kleinste Crash-Distanz fest
-			else if(adjacent < crashDistance)
+			else if(adjacent < crashDistance) {
+				n.setColor(Color.RED);
 				crashDistance = adjacent;
-			
-			/*n.setColor(Color.RED);
-			System.out.println(Math.toDegrees(alpha));
-			System.out.println(hypotenuse);
-			System.out.println(opposite);
-			System.out.println(adjacent);
-			System.out.println();*/
+			}
 		}
 
 		Node nextNode = null;
@@ -135,7 +130,7 @@ public class Ball extends Drawable{
 		}
 		
 		if(nextNode == null)
-			if(lastNode != null)
+			if(lastNode != null && lastNode.isVisible())
 				nextNode = lastNode;
 			else
 				return;

@@ -2,7 +2,6 @@ package control;
 
 import java.awt.Color;
 import java.awt.event.KeyEvent;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -75,17 +74,12 @@ public class Game2 {
 				
 				//laesst Ball um Node kreisen, wenn SPACE gedrueckt
 				if(keyInput.isPressed(KeyEvent.VK_SPACE) && !ball.isInOrbit())
-					ball.enterOrbit(getVisNodes());
+					ball.enterOrbit(getVisibleNodes());
 					//ball.rotate(0.1);
 				else if(!keyInput.isPressed(KeyEvent.VK_SPACE) && ball.isInOrbit()) {
 					ball.leaveOrbit(getSolids());
 					ring.setVisibility(false);
 				}
-				
-				if(ball.isInOrbit() && !rope.isConnected())
-					rope.connectTo(ball.getNode());
-				else if(!ball.isInOrbit() && rope.isConnected())
-					rope.disconnect();
 				
 				if(ball.isSpinning() && !ring.isVisible()) {
 					//mache neuen gestrichelten Ring auf Radius von Ball um Balls Node
@@ -93,14 +87,19 @@ public class Game2 {
 					ring.setScale(ball.getSpinRadius() / 100, ball.getSpinRadius() / 100);
 					ring.setVisibility(true);
 				}
-				
+
 				ball.update(getSolids());
 				counter.update(ball.getPos());
+				
+				if(ball.isInOrbit() && !rope.isConnected())
+					rope.connectTo(ball.getNode());
+				else if(!ball.isInOrbit() && rope.isConnected())
+					rope.disconnect();
 			}
 		};
 		
-		Timer timer = new Timer(true);
-		timer.schedule(new TimerTask() {
+		Timer timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
 			
 			@Override
 			public void run() {
@@ -110,7 +109,6 @@ public class Game2 {
 				
 				//Spiel beenden bei crash;
 				if(ball.hasCrashed()) {
-//					frame.clear();
 					t.interrupt();
 					timer.cancel();
 					return;
@@ -128,25 +126,26 @@ public class Game2 {
 				moveCamera();
 				
 				//spawn immer neue Nodes
-				if(getVisNodes().contains(nodes.get(nodes.size()-1)))
+				if(getVisibleNodes().contains(nodes.get(nodes.size()-1)))
 					spawnNode();
 
-				//upadte Nodes auf Sichtbarkeit und einfach so
 				for(Node n : nodes)
-					if(getVisNodes().contains(n)) {
-						if(!n.isVisible())
+					//mache Node sichtbar, wenn er im Fenster ist
+					if(getVisibleNodes().contains(n)) {
+						if(!n.isVisible()) {
 							n.setVisibility(true);
+						}
 						n.update(frame.getFps());
-					}else if(n.isVisible())
-						n.setVisibility(false);
+					}else
+						if(n.isVisible())
+							n.setVisibility(false);
 				
 				rope.update(frame.getFps());
 				wall.update();
 				tail.update(frame.getFps());
-				frame.getPanel().repaint();
+				frame.repaint();
 			}
 		}, 0, 1000/frame.getFps());
-			
 	}
 	
 	private void moveCamera() {
@@ -196,12 +195,11 @@ public class Game2 {
 	}
 	
 	//gibt Liste aller Nodes im Bildschirm zurück
-	public ArrayList<Node> getVisNodes() {
+	public ArrayList<Node> getVisibleNodes() {
 		ArrayList<Node> visNodes = new ArrayList<>();
 		
 		for(Node n : nodes)
-			if(camera.distance(n.getPos()) + n.getRadius() < Point2D.distance(0, 0, fWidth/2/camera.getZoom(),
-																					fHeight/2/camera.getZoom()))
+			if(Math.abs(camera.getY() - n.getPos().getY()) < fHeight/2 + n.getRadius())
 				visNodes.add(n);
 		return visNodes;
 	}
@@ -209,7 +207,7 @@ public class Game2 {
 	public ArrayList<Drawable> getSolids() {
 		ArrayList<Drawable> solids = new ArrayList<>();
 		solids.add(wall);
-		solids.addAll(getVisNodes());
+		solids.addAll(getVisibleNodes());
 		return solids;
 	}
 }

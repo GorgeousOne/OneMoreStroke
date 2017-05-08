@@ -16,6 +16,7 @@ public class Menu2 {
 	
 	@SuppressWarnings("unused")
 	private int fWidth, fHeight;
+	private boolean hasStopped = false;
 	
 	public Menu2(Window2 w) {
 	
@@ -37,10 +38,15 @@ public class Menu2 {
 		start.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				stop();
 				new Game2(frame);
 			}
 		});
 		frame.addButton(start);
+	}
+	
+	public void stop() {
+		hasStopped = true;
 	}
 	
 	private void loop() {
@@ -49,6 +55,10 @@ public class Menu2 {
 		t.schedule(	new TimerTask() {
 			@Override
 			public void run() {
+				
+				if(hasStopped)
+					t.cancel();
+				
 				frame.repaint();
 			}
 		}, 0, 1000/frame.getFps());

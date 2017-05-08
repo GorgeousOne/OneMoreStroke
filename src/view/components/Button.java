@@ -3,7 +3,6 @@ package view.components;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -46,11 +45,7 @@ public class Button extends JComponent {
 				
 				animation();
 				
-				Point mouse = new Point(getX() + e.getX(), getY() + e.getY());
-				
-				if(getBounds().contains(mouse)) {
-				}
-					
+//				Point mouse = new Point(getX() + e.getX(), getY() + e.getY());
 			}
 		});
 	}
@@ -71,21 +66,17 @@ public class Button extends JComponent {
 			t.interrupt();
 		
 		t = new Thread(new Runnable() {
-			
 			@Override
 			public void run() {
 				
 				for(int i = 0; i < 60; i++) {
-					
 					fading = new Color(fading.getRed(), fading.getGreen(), fading.getBlue(), fading.getAlpha()-255/60);
-					
 					try {
 						Thread.sleep(1000/60);
 					} catch (InterruptedException e) {
 						return;
 					}
 				}
-
 				isPressed = false;
 				actionPerformed();
 			}

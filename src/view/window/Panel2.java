@@ -76,7 +76,6 @@ public class Panel2 extends JPanel{
 		
 		g2.translate(fWidth/2 - camera.getX(),fHeight/2 -camera.getY());
 
-		System.out.println("+++++++");
 		for(Drawable d : shapes) {
 			try {
 				d.fill(g2);
@@ -84,8 +83,6 @@ public class Panel2 extends JPanel{
 				e.printStackTrace();
 			}
 		}
-		System.out.println("--------");
-		System.out.println();
 
 		g.drawImage(buffer, 0, 0, this);
 		g2.dispose();

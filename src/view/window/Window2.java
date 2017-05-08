@@ -51,7 +51,6 @@ public class Window2 extends JFrame{
 	
 	public void addDrawable(Drawable d) {
 		panel.addDrawable(d);
-		System.out.println("add");
 	}
 	
 	public void removeDrawable(Drawable d) {
