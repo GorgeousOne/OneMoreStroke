@@ -13,6 +13,7 @@ import javax.swing.SwingUtilities;
 
 public class Button extends JComponent {
 
+	//TODO reupload
 	private static final long serialVersionUID = 1L;
 	
 	private ActionListener actionListener;
@@ -25,41 +26,14 @@ public class Button extends JComponent {
 		super();
 		setBounds(0, 0, 50, 50);
 		fading = getBackground();
-
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if(SwingUtilities.isRightMouseButton(e))
-					return;
-				
-				isPressed = true;
-				if(t != null)
-					t.interrupt();
-				fading = getBackground();
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				if(SwingUtilities.isRightMouseButton(e))
-					return;
-				
-				animation();
-				
-//				Point mouse = new Point(getX() + e.getX(), getY() + e.getY());
-			}
-		});
+		
+		initMouseListener();
 	}
-	
-	private void actionPerformed() {
-		try {
-			actionListener.actionPerformed(null);
-		} catch (Exception e) {}
-	}
-	
+
 	public void addActionListener(ActionListener al) {
 		actionListener = al;
 	}
-	
+
 	private void animation() {
 		
 		if(t != null)
@@ -77,8 +51,8 @@ public class Button extends JComponent {
 						return;
 					}
 				}
+				actionListener.actionPerformed(null);
 				isPressed = false;
-				actionPerformed();
 			}
 		});
 		t.start();
@@ -95,9 +69,32 @@ public class Button extends JComponent {
 			g2.setColor(fading);
 			g2.setClip(-getX(), 0, getParent().getWidth(), getWidth());
 			g2.fillRect(-getX(), 0, getParent().getWidth(), getWidth());
-		}
 		
-		g2.setColor(getBackground());
-		g2.fillRect(0, 0, getWidth(), getHeight());
+		}else {
+			g2.setColor(getBackground());
+			g2.fillRect(0, 0, getWidth(), getHeight());
+		}
+	}
+	
+	public void initMouseListener() {
+		
+		addMouseListener(new MouseAdapter() {
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if(SwingUtilities.isLeftMouseButton(e)) {
+					isPressed = true;
+					if(t != null)
+						t.interrupt();
+					fading = getBackground();
+				}
+			}
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if(SwingUtilities.isLeftMouseButton(e))
+					animation();
+			}
+		});
 	}
 }
