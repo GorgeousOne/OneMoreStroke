@@ -1,10 +1,13 @@
 package control;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+
 
 import view.components.Counter;
 import view.drawables.*;
@@ -14,8 +17,10 @@ import view.window.Window;
 public class Game {
 
 	private Window frame;			//JFrame
-	private KeyInput keyInput;
 	private Camera camera;
+	private KeyInput keyInput;
+	@SuppressWarnings("unused")
+	private MouseInput mouseInput;
 	
 	private Ball ball;				//Geschoss, mit dem gespielt wird
 	private Wall wall;
@@ -26,20 +31,18 @@ public class Game {
 
 	private Counter counter;
 	
+	private Timer timer;
 	private int fWidth, fHeight;	//Groesse des Frames fuer JPanel
-	
+
 	public Game(Window w) {
-		System.out.println("hello");
-		
-		frame = w;
-		frame.clear();
-		frame.addKeyListener(keyInput = new KeyInput());
 
 		fWidth = w.getContentPane().getWidth();
 		fHeight = w.getContentPane().getHeight();
 		
-		camera = new Camera();
-		frame.addCamera(camera);
+		frame = w;
+		frame.clear();
+		frame.addCamera(camera = new Camera());
+		initKeyInput();
 
 		ball = new Ball(0, Color.WHITE, fWidth);
 		ball.setSpeed(fWidth/frame.getFps() * 1.3);
@@ -63,6 +66,8 @@ public class Game {
 		nodes = new ArrayList<>();
 		spawnNode();
 
+		timer  = new Timer(true);
+		
 		loop();
 	}
 	
@@ -72,15 +77,6 @@ public class Game {
 		Runnable r = new Runnable() {
 			@Override
 			public void run() {
-				
-				//laesst Ball um Node kreisen, wenn SPACE gedrueckt
-				if(keyInput.isPressed(KeyEvent.VK_SPACE) && !ball.isInOrbit())
-					ball.enterOrbit(getVisibleNodes());
-					//ball.rotate(0.1);
-				else if(!keyInput.isPressed(KeyEvent.VK_SPACE) && ball.isInOrbit()) {
-					ball.leaveOrbit(getSolids());
-					ring.setVisible(false);
-				}
 				
 				//male gestrichelten Ring um umkreiste Nodes
 				if(ball.isSpinning() && !ring.isVisible()) {
@@ -102,7 +98,6 @@ public class Game {
 			}
 		};
 		
-		Timer timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
 			
 			@Override
@@ -113,17 +108,7 @@ public class Game {
 				
 				//Spiel beenden bei crash;
 				if(ball.hasCrashed()) {
-					t.interrupt();
-					timer.cancel();
-					return;
-				}
-				
-				//Spiel beenden per ESC
-				if(keyInput.isPressed(KeyEvent.VK_ESCAPE)) {
-					t.interrupt();
-					frame.dispose();
-					timer.cancel();
-					return;
+					exit();
 				}
 				
 				//bewege Ball... Bewegungen nicht in extra Threads.
@@ -216,5 +201,33 @@ public class Game {
 		solids.add(wall);
 		solids.addAll(getVisibleNodes());
 		return solids;
+	}
+	
+	public void initKeyInput() {
+		
+		frame.addKeyListener(keyInput = new KeyInput());
+		keyInput.addKeyPressedAction(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(keyInput.isPressed(KeyEvent.VK_SPACE))
+					ball.enterOrbit(getVisibleNodes());
+				if(keyInput.isPressed(KeyEvent.VK_ESCAPE))
+					exit();
+			}
+		});
+		
+		keyInput.addKeyReleasedAction(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(!keyInput.isPressed(KeyEvent.VK_SPACE))
+					ball.leaveOrbit(getSolids());
+			}
+		});
+	}
+	
+	public void exit() {
+		frame.dispose();
+		timer.cancel();
+		return;
 	}
 }

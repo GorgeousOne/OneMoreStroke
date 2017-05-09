@@ -34,6 +34,7 @@ public class Menu {
 	private void initStartButton() {
 		
 		start = new Button();
+		frame.add(start);
 
 		start.setBackground(Drawable.RED);
 		start.setBounds(0, 0, fWidth/6, fWidth/6);
@@ -41,11 +42,10 @@ public class Menu {
 		start.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				new Game(frame);
 				stop();
+				new Game(frame);
 			}
 		});
-		frame.add(start);
 	}
 	
 	public void stop() {
