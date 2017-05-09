@@ -15,7 +15,7 @@ public class Node extends Drawable{
 	public Node(int layer, Color color) {
 
 		super(rndSkin(), layer);
-		setVisibility(false);
+		setVisible(false);
 		setColor(color);
 
 		spinSpeed = Math.random() * Math.PI/16 - Math.PI/32;

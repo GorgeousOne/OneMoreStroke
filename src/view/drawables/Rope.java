@@ -18,7 +18,7 @@ public class Rope extends Drawable{
 	
 	public Rope(int layer, Color color, Point2D ballPos, float width) {
 		super(createShape(), layer);
-		setVisibility(false);
+		setVisible(false);
 		setColor(color);
 		setPos(ballPos);
 		
@@ -38,12 +38,12 @@ public class Rope extends Drawable{
 		line.setLine(ballPos, n.getPos());
 		nodeColor = n.getPrimaryColor();
 		isConnected = true;
-		setVisibility(true);
+		setVisible(true);
 	}
 	
 	public void disconnect() {
 		isConnected = false;
-		setVisibility(false);
+		setVisible(false);
 	}
 	
 	public void update(int fps) {

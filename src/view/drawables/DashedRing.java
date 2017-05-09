@@ -11,7 +11,7 @@ public class DashedRing extends Drawable{
 	
 	public DashedRing(int layer, Color color, int segments, double width) {
 		super(createShape(width, segments), layer);
-		setVisibility(false);
+		setVisible(false);
 		setColor(color);
 	}
 

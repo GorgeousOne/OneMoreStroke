@@ -1,26 +1,19 @@
 package control;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.JFrame;
-
 import view.components.Counter;
 import view.drawables.*;
 import view.window.Camera;
-import view.window.Panel;
 import view.window.Window;
 
 public class Game {
 
 	private Window frame;			//JFrame
-	private Panel panel;			//JPanel zum Malen
 	private KeyInput keyInput;
 	private Camera camera;
 	
@@ -29,72 +22,79 @@ public class Game {
 	private Tail tail;
 	private Rope rope;
 	private DashedRing ring;
-	private ArrayList<Node> Nodes;
+	private ArrayList<Node> nodes;
 
 	private Counter counter;
 	
 	private int fWidth, fHeight;	//Groesse des Frames fuer JPanel
-	private int fps;				//legt Updates aller Objekte/sec fest
 	
-	public Game() {
+	public Game(Window w) {
+		System.out.println("hello");
+		
+		frame = w;
+		frame.clear();
+		frame.addKeyListener(keyInput = new KeyInput());
 
-		fps = 60;
-
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		fHeight = (int) screenSize.getHeight();
-		fWidth = (int) (fHeight * 5/8);						//480, 768
+		fWidth = w.getContentPane().getWidth();
+		fHeight = w.getContentPane().getHeight();
 		
 		camera = new Camera();
-		
-		panel = new Panel(fWidth, fHeight);					//Panel vor Window initialisieren
-		panel.addCamera(camera);
-		
-		frame = new Window("One More Stroke");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setResizable(false);
-		frame.setPreferredSize(new Dimension(fWidth + 6, fHeight + 29));
-		frame.setLocation((int) (screenSize.getWidth()/2 - fWidth/2) , 0);
-		
-		frame.add(panel);	//das bleibt genau hinter der Deklarierung
-		frame.addKeyListener(keyInput = new KeyInput());
-		frame.loadIconImage("/res/images/Icon.png");
-		frame.activate();
+		frame.addCamera(camera);
 
 		ball = new Ball(0, Color.WHITE, fWidth);
-		ball.setSpeed(fWidth/fps * 1.2);
+		ball.setSpeed(fWidth/frame.getFps() * 1.3);
 		
 		counter = new Counter(fWidth, "/res/fonts/terminat.ttf", (float) fWidth/10);
 		counter.setLocation(fWidth/16, fWidth/40);
-		counter.setPointDistance(ball.getSpeed() * fps/3);		//wenn Ball gerade fliegt, dauert ein Score-Punkt 1/2s
-		
+		counter.setPointDistance(ball.getSpeed() * frame.getFps()/3);		//wenn Ball gerade fliegt, dauert ein Score-Punkt 1/2s
+
 		tail = new Tail(1, Color.WHITE, ball, 200);
 		rope = new Rope(3, Color.WHITE, ball.getPos(), fWidth/150);
 		ring = new DashedRing(4, Drawable.ORANGE, 64, fWidth/200);
 		wall = new Wall(5, Drawable.RED, fWidth, fHeight, camera);
+
+		frame.addDrawable(ball);
+		frame.addDrawable(tail);
+		frame.addDrawable(rope);
+		frame.addDrawable(ring);
+		frame.addDrawable(wall);
+		frame.add(counter);
 		
-		panel.addDrawable(ball);
-		panel.addDrawable(tail);
-		panel.addDrawable(rope);
-		panel.addDrawable(ring);
-		panel.addDrawable(wall);
-		panel.add(counter);
-		
-		Nodes = new ArrayList<>();
+		nodes = new ArrayList<>();
 		spawnNode();
-		
+
 		loop();
 	}
 	
-	
 	private void loop() {
 		
+		//Extra Runnable um Zeit zu sparen
 		Runnable r = new Runnable() {
 			@Override
 			public void run() {
 				
+				//laesst Ball um Node kreisen, wenn SPACE gedrueckt
+				if(keyInput.isPressed(KeyEvent.VK_SPACE) && !ball.isInOrbit())
+					ball.enterOrbit(getVisibleNodes());
+					//ball.rotate(0.1);
+				else if(!keyInput.isPressed(KeyEvent.VK_SPACE) && ball.isInOrbit()) {
+					ball.leaveOrbit(getSolids());
+					ring.setVisible(false);
+				}
+				
+				//male gestrichelten Ring um umkreiste Nodes
+				if(ball.isSpinning() && !ring.isVisible()) {
+					ring.setPos(ball.getNode().getPos());
+					ring.setScale(ball.getSpinRadius() / 100, ball.getSpinRadius() / 100);
+					ring.setVisible(true);
+				}
+				
+				//ueberpruefe crashes und connecte mit Nodes
 				ball.update(getSolids());
+				//erhoehe score wenn noetig
 				counter.update(ball.getPos());
 				
+				//male Rope zwischen Ball und Node
 				if(ball.isInOrbit() && !rope.isConnected())
 					rope.connectTo(ball.getNode());
 				else if(!ball.isInOrbit() && rope.isConnected())
@@ -113,13 +113,12 @@ public class Game {
 				
 				//Spiel beenden bei crash;
 				if(ball.hasCrashed()) {
-					panel.clear();
 					t.interrupt();
 					timer.cancel();
 					return;
 				}
 				
-				//Spiel schliessen per Esc
+				//Spiel beenden per ESC
 				if(keyInput.isPressed(KeyEvent.VK_ESCAPE)) {
 					t.interrupt();
 					frame.dispose();
@@ -127,49 +126,35 @@ public class Game {
 					return;
 				}
 				
-				//laesst Ball um Node kreisen, wenn SPACE gedrueckt
-				if(keyInput.isPressed(KeyEvent.VK_SPACE) && !ball.isInOrbit())
-					ball.enterOrbit(getVisibleNodes());
-					//ball.rotate(0.1);
-				else if(!keyInput.isPressed(KeyEvent.VK_SPACE) && ball.isInOrbit()) {
-					ball.leaveOrbit(getSolids());
-					ring.setVisibility(false);
-				}
-				
+				//bewege Ball... Bewegungen nicht in extra Threads.
 				ball.move2();
 				moveCamera();
 				
-				if(ball.isSpinning() && !ring.isVisible()) {
-					//mache neuen gestrichelten Ring auf Radius von Ball um Balls Node
-					ring.setPos(ball.getNode().getPos());
-					ring.setScale(ball.getSpinRadius() / 100, ball.getSpinRadius() / 100);
-					ring.setVisibility(true);
-				}
-				
 				//spawn immer neue Nodes
-				if(getVisibleNodes().contains(Nodes.get(Nodes.size()-1)))
+				if(getVisibleNodes().contains(nodes.get(nodes.size()-1)))
 					spawnNode();
 
-				for(Node n : Nodes)
-					//mache Node sichtbar, wenn er im Fenster ist
+				//check Nodes auf Sichtbarkeit + Updates(die Dinger drehen sich ja)
+				for(Node n : nodes)
 					if(getVisibleNodes().contains(n)) {
 						if(!n.isVisible()) {
-							n.setVisibility(true);
+							n.setVisible(true);
 						}
-						n.update(fps);
+						n.update(frame.getFps());
 					}else
 						if(n.isVisible())
-							n.setVisibility(false);
+							n.setVisible(false);
 				
-				rope.update(fps);
+				//restliche Updates... lies selber nach was die machen
+				rope.update(frame.getFps());
 				wall.update();
-				tail.update(fps);
-				panel.repaint();
+				tail.update(frame.getFps());
+				frame.repaint();
 			}
-		}, 0, 1000/fps);
-			
+		}, 0, 1000/frame.getFps());
 	}
 	
+	//tolle bewegung muss ja auch iwo herkommen
 	private void moveCamera() {
 		double posX, posY;
 		
@@ -185,7 +170,7 @@ public class Game {
 		double posX, posY, scale;
 		
 		//ganz zu Anfang
-		if(Nodes.isEmpty()) {
+		if(nodes.isEmpty()) {
 			posX = fWidth/6 + (int) (Math.random() + 0.5) * fWidth*2/3;	//das ist halt links oder rechts, nicht Mitte
 			posY = -4*counter.getPointDistance();						
 			scale = fWidth/5000d;
@@ -194,37 +179,38 @@ public class Game {
 			n.setScale(scale, scale);
 			n.setPos(posX, posY);
 		
-		//irgendwo random
+		//irgendwo im Spiel random
 		}else {
-			Node lastNode = Nodes.get(Nodes.size()-1);
-			//besteht aus begrenztem Wachstum * Math.random()
+			Node lastNode = nodes.get(nodes.size()-1);
 			
+			//Nodes wachsen begrenzt
 			double increasement = 0.4 - (0.4 - 0.1) * Math.pow(Math.E, -0.005 * counter.getScore());
 			scale = fWidth/5000d;
 			scale += fWidth/500d * Math.random() * increasement;
 			
 			posX = fWidth*1/6d + Math.random() * fWidth*2/3d; //das ist 1/6 Rand zu beiden Seiten
+			//posX = fWidth/2;
 			posY = lastNode.getPos().getY() - Math.random() * fWidth*2/5d - fWidth*2/5d;
 			
 			n = new Node(2, Drawable.nextNeonColor(lastNode.getColor()));
 			n.setScale(scale, scale);
 			n.setPos(posX, posY);
 		}
-		Nodes.add(n);
-		panel.addDrawable(n);
+		nodes.add(n);
+		frame.addDrawable(n);
 	}
 	
 	//gibt Liste aller Nodes im Bildschirm zurück
 	public ArrayList<Node> getVisibleNodes() {
 		ArrayList<Node> visNodes = new ArrayList<>();
 		
-		for(Node n : Nodes)
-			if(camera.distance(n.getPos()) + n.getRadius() < Point2D.distance(0, 0, fWidth/2/camera.getZoom(),
-																					fHeight/2/camera.getZoom()))
+		for(Node n : nodes)
+			if(Math.abs(camera.getY() - n.getPos().getY()) < fHeight/2 + n.getRadius())
 				visNodes.add(n);
 		return visNodes;
 	}
 	
+	//alle Mauern, Nodes... ja
 	public ArrayList<Drawable> getSolids() {
 		ArrayList<Drawable> solids = new ArrayList<>();
 		solids.add(wall);

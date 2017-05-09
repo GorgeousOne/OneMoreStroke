@@ -1,15 +1,27 @@
 package view.window;
 
+import java.awt.Component;
 import java.io.IOException;
+import java.util.ArrayList;
+
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+
+import view.drawables.Drawable;
 
 public class Window extends JFrame{
 
 	private static final long serialVersionUID = 1L;
+	private Panel panel;
+	private int fps;
 	
 	public Window(String title) {
 		super(title);
+		
+		panel = new Panel();
+		getContentPane().add(panel);
+		
+		setFps(60);
 	}
 	
 	public void loadIconImage(String path) {
@@ -20,8 +32,40 @@ public class Window extends JFrame{
 		}
 	}
 	
+//	public Panel getPanel() {return panel;}
+	
+	public int getFps() {return fps;}
+	public void setFps(int fps) {this.fps = Math.max(1, fps);}
+	
+	public void addCamera(Camera c) {
+		panel.addCamera(c);
+	}
+	
+	@Override
+	public Component add(Component comp) {
+		panel.add(comp);
+		return comp;
+	}
+	
+	public ArrayList<Drawable> getDrawables() {
+		return panel.getDrawables();
+	}
+	
+	public void addDrawable(Drawable d) {
+		panel.addDrawable(d);
+	}
+	
+	public void removeDrawable(Drawable d) {
+		panel.removeDrawable(d);
+	}
+	
+	public void clear() {
+		panel.clear();
+	}
+	
 	public void activate() {
 		pack();
+		panel.setSize(getContentPane().getSize());
 		setVisible(true);
 	}
 }

@@ -65,7 +65,7 @@ public class Drawable {
 	public void setColor(Color color) {this.color = color;}
 	
 	public void setScale(double sx, double sy) {scale.setLocation(sx, sy);}
-	public void setVisibility(boolean visible) {this.isVisible = visible;}
+	public void setVisible(boolean visible) {this.isVisible = visible;}
 
 	public void setPos(Point2D pos) {this.pos = pos;}
 	public void setPos(double posX, double posY) {pos.setLocation(posX, posY);}

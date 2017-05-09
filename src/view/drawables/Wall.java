@@ -29,7 +29,6 @@ public class Wall extends Drawable{
 		return shape;
 	}
 	public void update() {
-		//setPos(getPos().getX(), camera.getY() - fHeight / 2);
 		setPos(getPos().getX(), camera.getY());
 		setScale(1, 1/camera.getZoom());
 	}
