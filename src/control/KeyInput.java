@@ -7,40 +7,32 @@ import java.util.HashMap;
 
 public class KeyInput extends KeyAdapter{
 
-	private HashMap<Integer, Boolean> keys;
-	private ActionListener keyPressedAction;
-	private ActionListener keyReleasedAction;
+	private HashMap<Integer, ActionListener> keyPressActions;
+	private HashMap<Integer, ActionListener> keyReleaseActions;
 
 	public KeyInput() {
-		keys = new HashMap<>();
 		
-		keyPressedAction = e -> {};
-		keyReleasedAction = e -> {};
+		keyPressActions = new HashMap<>();
+		keyReleaseActions = new HashMap<>();
 	}
 	
-	public void addKeyPressedAction(ActionListener al) {
-		keyPressedAction = al;
+	public void addKeyPressAction(int key, ActionListener al) {
+		keyPressActions.put(key, al);
 	}
 	
-	public void addKeyReleasedAction(ActionListener al) {
-		keyReleasedAction = al;
-	}
-	
-	public Boolean isPressed(Integer key) {
-		if(keys.containsKey(key))
-			return keys.get(key);
-		return false;
+	public void addKeyReleasedAction(int key, ActionListener al) {
+		keyReleaseActions.put(key, al);
 	}
 	
 	@Override
 	public void keyPressed(KeyEvent e) {
-		keys.put(e.getKeyCode(), true);
-		keyPressedAction.actionPerformed(null);
+		if(keyPressActions.containsKey(e.getKeyCode()))
+			keyPressActions.get(e.getKeyCode()).actionPerformed(null);
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		keys.put(e.getKeyCode(), false);
-		keyReleasedAction.actionPerformed(null);
+		if(keyReleaseActions.containsKey(e.getKeyCode()))
+			keyReleaseActions.get(e.getKeyCode()).actionPerformed(null);
 	}
 }

@@ -1,8 +1,6 @@
 package control;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -49,7 +47,7 @@ public class Game {
 		
 		counter = new Counter(fWidth, "/res/fonts/terminat.ttf", (float) fWidth/10);
 		counter.setLocation(fWidth/16, fWidth/40);
-		counter.setPointDistance(ball.getSpeed() * frame.getFps()/3);		//wenn Ball gerade fliegt, dauert ein Score-Punkt 1/2s
+		counter.setPointDistance(ball.getSpeed() * frame.getFps()/3);		//wenn Ball gerade fliegt, dauert ein Score-Punkt 1/3s
 
 		tail = new Tail(1, Color.WHITE, ball, 200);
 		rope = new Rope(3, Color.WHITE, ball.getPos(), fWidth/150);
@@ -84,6 +82,8 @@ public class Game {
 					ring.setScale(ball.getSpinRadius() / 100, ball.getSpinRadius() / 100);
 					ring.setVisible(true);
 				}
+				if(!ball.isSpinning() && ring.isVisible())
+					ring.setVisible(false);
 				
 				//ueberpruefe crashes und connecte mit Nodes
 				ball.update(getSolids());
@@ -204,25 +204,23 @@ public class Game {
 	}
 	
 	public void initKeyInput() {
-		
+	
 		frame.addKeyListener(keyInput = new KeyInput());
-		keyInput.addKeyPressedAction(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(keyInput.isPressed(KeyEvent.VK_SPACE))
-					ball.enterOrbit(getVisibleNodes());
-				if(keyInput.isPressed(KeyEvent.VK_ESCAPE))
-					exit();
-			}
-		});
-		
-		keyInput.addKeyReleasedAction(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(!keyInput.isPressed(KeyEvent.VK_SPACE))
-					ball.leaveOrbit(getSolids());
-			}
-		});
+		keyInput.addKeyPressAction(KeyEvent.VK_SPACE, e -> onKeyPress(KeyEvent.VK_SPACE));
+		keyInput.addKeyPressAction(KeyEvent.VK_ESCAPE, e -> onKeyPress(KeyEvent.VK_ESCAPE));
+		keyInput.addKeyReleasedAction(KeyEvent.VK_ESCAPE, e -> onKeyRelease(KeyEvent.VK_ESCAPE));
+	}
+	
+	private void onKeyPress(int key) {
+		if(key == KeyEvent.VK_SPACE)
+			ball.enterOrbit(getVisibleNodes());
+		if(key == KeyEvent.VK_ESCAPE)
+			exit();
+	}
+	
+	private void onKeyRelease(int key) {
+		if(key == KeyEvent.VK_SPACE)
+			ball.leaveOrbit(getSolids());
 	}
 	
 	public void exit() {
