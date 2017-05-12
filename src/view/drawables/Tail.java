@@ -42,7 +42,7 @@ public class Tail extends Drawable{
 		
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(getColor());
-		g2.setStroke(new BasicStroke(10, BasicStroke.CAP_BUTT, BasicStroke.CAP_ROUND));
+		g2.setStroke(new BasicStroke(10, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
 
 		GeneralPath path = new GeneralPath();
 		path.moveTo(segments.get(0).getX(), segments.get(0).getY());
