@@ -17,16 +17,12 @@ public class Counter extends JComponent{
 	private static final long serialVersionUID = 1L;
 	
 	private int score;					//Score des Spielers/Balls
-	private Font font;					//Terminator2
 	private double pointDistance;		//Laenge zwischen 2 Score-Punkten
 	
-	public Counter(int fWidth, String fontPath, float fontSize) {
+	public Counter(int fWidth) {
 		
 		pointDistance = 1;
 		score = 0;
-		font = loadFont(fontPath, fontSize);
-		
-		setBounds(0, 0, fWidth/2, font.getSize());
 	}
 	
 	public double getPointDistance() {return pointDistance;}
@@ -44,18 +40,18 @@ public class Counter extends JComponent{
 	
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP); 
-		g2.setFont(font);
+		g2.setFont(getFont());
 		g2.setColor(Color.WHITE);
-		g2.drawString(Integer.toString(score), 0, font.getSize());
+		g2.drawString(Integer.toString(score), 0, getFont().getSize());
 	}
 
 	
-	public Font loadFont(String path, float fontSize) {
+	public Font loadFont(String path) {
 		Font font = null;
 
 		try {
 			InputStream stream = getClass().getResourceAsStream(path);
-			font = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(fontSize);
+			font = Font.createFont(Font.TRUETYPE_FONT, stream);
 			stream.close();
 		} catch (FontFormatException e) {
 			e.printStackTrace();
