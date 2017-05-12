@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
 import view.components.Counter;
 import view.drawables.*;
 import view.window.Camera;
@@ -45,7 +44,9 @@ public class Game {
 		ball = new Ball(0, Color.WHITE, fWidth);
 		ball.setSpeed(fWidth/frame.getFps() * 1.3);
 		
-		counter = new Counter(fWidth, "/res/fonts/terminat.ttf", (float) fWidth/10);
+		counter = new Counter(fWidth);
+		counter.setFont(counter.loadFont("/res/fonts/terminat.ttf").deriveFont((float) fWidth/10));
+		counter.setBounds(0, 0, fWidth/2, counter.getFont().getSize());
 		counter.setLocation(fWidth/16, fWidth/40);
 		counter.setPointDistance(ball.getSpeed() * frame.getFps()/3);		//wenn Ball gerade fliegt, dauert ein Score-Punkt 1/3s
 
@@ -208,7 +209,7 @@ public class Game {
 		frame.addKeyListener(keyInput = new KeyInput());
 		keyInput.addKeyPressAction(KeyEvent.VK_SPACE, e -> onKeyPress(KeyEvent.VK_SPACE));
 		keyInput.addKeyPressAction(KeyEvent.VK_ESCAPE, e -> onKeyPress(KeyEvent.VK_ESCAPE));
-		keyInput.addKeyReleasedAction(KeyEvent.VK_ESCAPE, e -> onKeyRelease(KeyEvent.VK_ESCAPE));
+		keyInput.addKeyReleasedAction(KeyEvent.VK_SPACE, e -> onKeyRelease(KeyEvent.VK_SPACE   ));
 	}
 	
 	private void onKeyPress(int key) {
@@ -224,8 +225,7 @@ public class Game {
 	}
 	
 	public void exit() {
-		frame.dispose();
 		timer.cancel();
-		return;
+		new Menu(frame);
 	}
 }
