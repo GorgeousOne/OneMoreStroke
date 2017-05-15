@@ -18,7 +18,7 @@ public class Background extends Drawable{
 	
 	private Polygon[] tiles;
 	private final double width = 16;
-	private final double height = 40;
+	private final double height = 42;
 	
 	Rectangle screen;
 	private Camera camera;
@@ -55,13 +55,15 @@ public class Background extends Drawable{
 		AffineTransform old = g2.getTransform();
 		
 		g2.setColor(Drawable.GRAY);
-		g2.translate(screen.getWidth()/2, 0);
-		g2.scale(screen.getWidth()/16, screen.getWidth()/16);
+		g2.translate(screen.getWidth()/2 + (camera.getX() - screen.getWidth()/2)/4, 0);
+		g2.scale(screen.getWidth() / width, screen.getWidth() / width);
 
 		for(Polygon p : tiles) {
 			
-			if(p.getBounds().getMinY()*g2.getTransform().getScaleX() > camera.getY() + screen.getHeight()/2)
-				p.translate(0, (int) (-height));
+			if(p.getBounds().getMinY() * g2.getTransform().getScaleX() > camera.getY() + screen.getHeight()/2)
+				p.translate(0, (int) -height);
+			else if(p.getBounds().getMaxY() * g2.getTransform().getScaleX() < camera.getY() - screen.getHeight()/2)
+				p.translate(0, (int) height);
 
 			g2.fill(p);
 		}
@@ -106,6 +108,7 @@ public class Background extends Drawable{
 		pY = new int[] {20, 28, 30, 22};
 		tiles[7] = new Polygon(pX, pY, 4);
 		
+		//TODO
 		pX = new int[] {2, 4, 4, 2};
 		pY = new int[] {26, 28, 32, 30};
 		tiles[8] = new Polygon(pX, pY, 4);
@@ -114,13 +117,14 @@ public class Background extends Drawable{
 		pY = new int[] {28, 36, 38, 36, 32};
 		tiles[9] = new Polygon(pX, pY, 5);
 		
-		pX = new int[] {4, 4, 2};
-		pY = new int[] {32, 36, 34};
-		tiles[10] = new Polygon(pX, pY, 3);
 		
 		pX = new int[] {-6, -6, -8, -8};
 		pY = new int[] {32, 40, 42, 34};
-		tiles[11] = new Polygon(pX, pY, 4);
+		tiles[10] = new Polygon(pX, pY, 4);
+		
+		pX = new int[] {4, 4, 2};
+		pY = new int[] {32, 36, 34};
+		tiles[11] = new Polygon(pX, pY, 3);
 		
 		pX = new int[] {2, 4, 4, 2};
 		pY = new int[] {38, 40, 44, 42};
