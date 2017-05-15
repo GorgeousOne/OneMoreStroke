@@ -21,8 +21,8 @@ public class OneMoreMain {
 		frame.setResizable(false);
 		frame.setPreferredSize(new Dimension(fWidth, fHeight));
 		frame.setLocation((int) (screenSize.getWidth()/2 - fWidth/2) , 0);
-		frame.pack();
-
+		frame.activate();
+		
 		new Menu(frame);
 	}
 	

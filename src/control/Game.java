@@ -1,10 +1,12 @@
 package control;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+
 
 import view.components.Counter;
 import view.drawables.*;
@@ -20,21 +22,25 @@ public class Game {
 	private MouseInput mouseInput;
 	
 	private Ball ball;				//Geschoss, mit dem gespielt wird
-	private Wall wall;
 	private Tail tail;
 	private Rope rope;
 	private DashedRing ring;
+	private Wall wall;
+	private Background background;
+
 	private ArrayList<Node> nodes;
 
 	private Counter counter;
 	
 	private Timer timer;
 	private int fWidth, fHeight;	//Groesse des Frames fuer JPanel
+	private Rectangle screen;
 
 	public Game(Window w) {
 
 		fWidth = w.getContentPane().getWidth();
 		fHeight = w.getContentPane().getHeight();
+		screen = new Rectangle(0, 0, fWidth, fHeight);
 		
 		frame = w;
 		frame.clear();
@@ -42,24 +48,25 @@ public class Game {
 		initKeyInput();
 
 		ball = new Ball(0, Color.WHITE, fWidth);
+		System.out.println(ball.getPos());
 		ball.setSpeed(fWidth/frame.getFps() * 1.3);
 		
 		counter = new Counter(fWidth);
-		counter.setFont(counter.loadFont("/res/fonts/terminat.ttf").deriveFont((float) fWidth/10));
-		counter.setBounds(0, 0, fWidth/2, counter.getFont().getSize());
 		counter.setLocation(fWidth/16, fWidth/40);
-		counter.setPointDistance(ball.getSpeed() * frame.getFps()/3);		//wenn Ball gerade fliegt, dauert ein Score-Punkt 1/3s
+		counter.setPointDistance(ball.getSpeed() * frame.getFps()/3); //wenn Ball gerade fliegt, dauert ein Score-Punkt 1/3s
 
-		tail = new Tail(1, Color.WHITE, ball, 200);
+		tail = new Tail(1, Color.WHITE, ball, fHeight, camera);
 		rope = new Rope(3, Color.WHITE, ball.getPos(), fWidth/150);
 		ring = new DashedRing(4, Drawable.ORANGE, 64, fWidth/200);
 		wall = new Wall(5, Drawable.RED, fWidth, fHeight, camera);
+		background = new Background(6, screen, camera);
 
 		frame.addDrawable(ball);
 		frame.addDrawable(tail);
 		frame.addDrawable(rope);
 		frame.addDrawable(ring);
 		frame.addDrawable(wall);
+		frame.addDrawable(background);
 		frame.add(counter);
 		
 		nodes = new ArrayList<>();
@@ -83,8 +90,6 @@ public class Game {
 					ring.setScale(ball.getSpinRadius() / 100, ball.getSpinRadius() / 100);
 					ring.setVisible(true);
 				}
-				if(!ball.isSpinning() && ring.isVisible())
-					ring.setVisible(false);
 				
 				//ueberpruefe crashes und connecte mit Nodes
 				ball.update(getSolids());
@@ -116,20 +121,18 @@ public class Game {
 				ball.move2();
 				moveCamera();
 				
-				//spawn immer neue Nodes
-				if(getVisibleNodes().contains(nodes.get(nodes.size()-1)))
+				//spawn neue nodes, wenn die letzten sichtbar sind
+				if(nodes.get(nodes.size()-1).isVisible())
 					spawnNode();
 
 				//check Nodes auf Sichtbarkeit + Updates(die Dinger drehen sich ja)
 				for(Node n : nodes)
 					if(getVisibleNodes().contains(n)) {
-						if(!n.isVisible()) {
+						if(!n.isVisible())
 							n.setVisible(true);
-						}
 						n.update(frame.getFps());
-					}else
-						if(n.isVisible())
-							n.setVisible(false);
+					}else if(n.isVisible())
+						n.setVisible(false);
 				
 				//restliche Updates... lies selber nach was die machen
 				rope.update(frame.getFps());
@@ -205,11 +208,10 @@ public class Game {
 	}
 	
 	public void initKeyInput() {
-	
 		frame.addKeyListener(keyInput = new KeyInput());
 		keyInput.addKeyPressAction(KeyEvent.VK_SPACE, e -> onKeyPress(KeyEvent.VK_SPACE));
 		keyInput.addKeyPressAction(KeyEvent.VK_ESCAPE, e -> onKeyPress(KeyEvent.VK_ESCAPE));
-		keyInput.addKeyReleasedAction(KeyEvent.VK_SPACE, e -> onKeyRelease(KeyEvent.VK_SPACE   ));
+		keyInput.addKeyReleasedAction(KeyEvent.VK_SPACE, e -> onKeyRelease(KeyEvent.VK_SPACE));
 	}
 	
 	private void onKeyPress(int key) {
@@ -222,7 +224,7 @@ public class Game {
 	private void onKeyRelease(int key) {
 		if(key == KeyEvent.VK_SPACE)
 			ball.leaveOrbit(getSolids());
-	}
+ 	}
 	
 	public void exit() {
 		timer.cancel();

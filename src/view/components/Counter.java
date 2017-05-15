@@ -23,6 +23,9 @@ public class Counter extends JComponent{
 		
 		pointDistance = 1;
 		score = 0;
+		
+		setFont(loadFont("/res/fonts/terminat.ttf").deriveFont((float) fWidth/10));
+		setBounds(0, 0, fWidth/2, getFont().getSize());
 	}
 	
 	public double getPointDistance() {return pointDistance;}

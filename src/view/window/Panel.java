@@ -27,24 +27,18 @@ public class Panel extends JPanel{
 		shapes = new ArrayList<>();
 		camera = new Camera();
 	}
-
-	@Override
-	public void setSize(Dimension size) {
-		super.setSize(size);
-		fWidth = (int) size.getWidth();
-		fHeight = (int) size.getHeight();
-		
-		buffer = new BufferedImage(fWidth, fHeight, BufferedImage.TYPE_3BYTE_BGR);
-	}
-	
-	public ArrayList<Drawable> getDrawables() {return shapes;}
 	
 	public BufferedImage getScreenShot() {
 		return new BufferedImage(buffer.getColorModel(), buffer.getRaster(), buffer.isAlphaPremultiplied(), null);
 	}
 	
-	public void addCamera(Camera camera) {this.camera = camera;}
-
+	public void addCamera(Camera camera) {
+		this.camera = camera;
+	}
+	public ArrayList<Drawable> getDrawables() {
+		return shapes;
+	}
+	
 	public void addDrawable(Drawable d) {
 		for(int i = 0; i < shapes.size(); i++) {
 			if(d.getLayer() >= shapes.get(i).getLayer()) {
@@ -66,8 +60,18 @@ public class Panel extends JPanel{
 	}
 	
 	@Override
+	public void setSize(Dimension size) {
+		super.setSize(size);
+		fWidth = (int) size.getWidth();
+		fHeight = (int) size.getHeight();
+		
+		buffer = new BufferedImage(fWidth, fHeight, BufferedImage.TYPE_3BYTE_BGR);
+	}
+	
+	@Override
 	public void paintComponent(Graphics g) {
-
+		
+		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) buffer.getGraphics();
 
 		g2.setColor(Color.BLACK);

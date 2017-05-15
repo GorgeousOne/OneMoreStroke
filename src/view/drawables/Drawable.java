@@ -15,6 +15,10 @@ public class Drawable {
 	public static final Color ORANGE = new Color(246, 130, 34);
 	public static final Color PURPLE = new Color(157, 63, 255);
 	
+	public static final Color GRAY = new Color(60, 60, 60);
+	public static final Color LIGHT_GRAY = new Color(180, 180, 180);
+	public static final Color DARK_GRAY = new Color(50, 50, 50);
+	
 	private static Color[] NEON_COLORS = {BLUE, YELLOW, LIGHT_BLUE, RED, 
 										  GREEN, ORANGE, PURPLE};
 	

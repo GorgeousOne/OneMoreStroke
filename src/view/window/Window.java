@@ -1,6 +1,7 @@
 package view.window;
 
 import java.awt.Component;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -21,7 +22,7 @@ public class Window extends JFrame{
 		panel = new Panel();
 		getContentPane().add(panel);
 		
-		setFps(60);
+		fps = 60;
 	}
 	
 	public void loadIconImage(String path) {
@@ -32,10 +33,17 @@ public class Window extends JFrame{
 		}
 	}
 	
-//	public Panel getPanel() {return panel;}
+	public int getFps() {
+		return fps;
+	}
 	
-	public int getFps() {return fps;}
-	public void setFps(int fps) {this.fps = Math.max(1, fps);}
+	public void setFps(int fps) {
+		this.fps = Math.max(1, fps);
+	}
+	
+	public BufferedImage getScreenShot() {
+		return panel.getScreenShot();
+	}
 	
 	public void addCamera(Camera c) {
 		panel.addCamera(c);

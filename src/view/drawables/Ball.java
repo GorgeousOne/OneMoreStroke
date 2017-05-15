@@ -52,10 +52,19 @@ public class Ball extends Drawable{
 		shape.add		(new Area(new Rectangle2D.Double(-radius, -radius, radius, 2*radius)));
 		shape.subtract	(new Area(new Rectangle2D.Double(-radius, -radius, radius*2/3, 2*radius)));
 		return shape;
+		
+		/*Area shape = 	 new Area(new Ellipse2D.Double	(-6, -6, 12, 12));
+		shape.subtract	(new Area(new Ellipse2D.Double	(-4, -4,  8, 8)));
+		shape.add		(new Area(new Ellipse2D.Double	(-2, -2,  4, 4)));
+		shape.add		(new Area(new Rectangle2D.Double(-6, -6,  6, 12)));
+		shape.subtract	(new Area(new Rectangle2D.Double(-6, -6,  4, 12)));
+		return shape;*/
 	}
 	
 	public double getSpeed() {return speed;}
 	public Node getNode() {return lastNode;}
+
+	public void setSpeed(double speed) {this.speed = speed;}
 
 	public boolean isInOrbit() {return isInOrbit;}
 	public boolean isSpinning() {return isSpinning;}
@@ -67,8 +76,6 @@ public class Ball extends Drawable{
 		else
 			return 0;
 	}
-	
-	public void setSpeed(double speed) {this.speed = speed;}
 	
 	/* Ball muss irgendwie abschaetzen, welcher naechste Node zum andocken ist
 	 * dazu werden Diszanz zu Node(hypotenuse) & Richtung zu Node(alpha) verglichen; 50:50 Einfluss
@@ -230,10 +237,12 @@ public class Ball extends Drawable{
 				return true;
 		}	
 		
-		//wenn nicht in einem Orbit und Schutzzeit abgelaufen
+		//wenn nicht in einem Orbit und Schutzzeit abgelaufen oder Ball fliegt nach nur nach unten
 		if(!isInOrbit && crashTimer + crashBuffer < System.currentTimeMillis())
 			//und Ball ausserhalb des Spielfelds -> crash
-			if(getPos().getX() < -40 + radius/2 || getPos().getX() > fWidth + 40 - radius/2)
+			if(getPos().getX() < -40 + radius/2 || 
+			   getPos().getX() > fWidth + 40 - radius/2 ||
+			   getPos().getY() > 2*fWidth)
 				return true;
 		
 		return false;

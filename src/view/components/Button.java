@@ -58,6 +58,29 @@ public class Button extends JComponent {
 		t.start();
 	}
 	
+	@SuppressWarnings("unused")
+	private void animation2() {
+		
+		if(t != null)
+			t.interrupt();
+		
+		t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				
+				for(int i = 0; i < 60; i++) {
+					 
+					try {
+						Thread.sleep(1000/60);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+	}
+	
 	@Override
 	public void paintComponent(Graphics g) {
 		

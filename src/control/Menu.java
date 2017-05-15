@@ -21,8 +21,8 @@ public class Menu {
 	public Menu(Window w) {
 
 		frame = w;
-		frame.activate();
-
+		frame.clear();
+		
 		fWidth = w.getContentPane().getWidth();
 		fHeight = w.getContentPane().getHeight();
 //		System.out.println(fWidth + ", " + fHeight);
