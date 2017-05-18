@@ -13,6 +13,7 @@ import view.window.Camera;
 public class Tail extends Drawable{
 
 	private Ball ball;
+	private Node lastNode;
 	private int fHeight;
 	private Camera camera;
 	
@@ -31,8 +32,13 @@ public class Tail extends Drawable{
 	}
 
 	public void update(int fps) {
+		
 		stripe1.update();
-		if(ball.isSpinning() && !ball.getNode().wasConnected() && !getColor().equals(ball.getNode().getPrimaryColor())) {
+		
+		if(ball.isSpinning() && !ball.getNode().wasConnected())
+			lastNode = ball.getNode();
+		
+		if(lastNode != null && !getColor().equals(lastNode.getPrimaryColor())) {
 			//System.out.println(!ball.getNode().gotTouched());
 			courseColorTo(ball.getNode().getPrimaryColor(), fps/5);
 		}

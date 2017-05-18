@@ -90,6 +90,9 @@ public class Ball extends Drawable{
 		double alpha, adjacent, opposite, hypotenuse, proportion;
 		double crashDistance = fWidth;
 		
+		double maxCatchDist = fWidth;
+		double maxSpinRadius = fWidth;
+		
 		//finde heraus, welche Nodes erreichbar sind
 		for(Node n : visibleNodes) {
 			
@@ -102,6 +105,10 @@ public class Ball extends Drawable{
 			//Distanz geradeaus bis parralel zu Node
 			adjacent = Math.abs(Math.cos(alpha)) * hypotenuse;
 			//tada ein rechtwinkliges Dreieck
+			
+			//ist Node zu weit weg? dann ist er auch nicht crash-relevant
+			if(hypotenuse > maxCatchDist || opposite > maxSpinRadius)
+				continue;
 			
 			//wuerde Ball beim Umkreisen nicht crashen?
 			if(opposite > radius*getScale().getX() + n.getRadius())
@@ -137,9 +144,10 @@ public class Ball extends Drawable{
 		}
 		
 		if(nextNode == null)
-			if(lastNode != null && lastNode.isVisible())
+			if(lastNode != null && lastNode.isVisible() && getPos().distance(lastNode.getPos()) < fWidth/4) {
 				nextNode = lastNode;
-			else
+				System.out.println("weellll");
+			}else
 				return;
 		
 		//teste, ob Node lings/rechts von Ball ist -> setzte Drehrichtung
