@@ -42,10 +42,10 @@ public class Game {
 		frame.clear();
 		frame.addCamera(camera = new Camera());
 		initKeyInput();
-		initWindowStateInput();
+		initWindowAdapter();
 
 		ball = new Ball(0, Color.WHITE, fWidth);
-		ball.setSpeed(fWidth/frame.getFps() * 1.3);
+		ball.setSpeed(fWidth/frame.getFps());
 		
 		counter = new Counter(fWidth);
 		counter.setLocation(fWidth/16, fWidth/40);
@@ -107,7 +107,7 @@ public class Game {
 				
 				//Spiel beenden bei crash;
 				if(ball.hasCrashed()) {
-					timer.cancel();
+					exit();
 				}
 				
 				//bewege Ball... Bewegungen nicht in extra Threads.
@@ -215,19 +215,19 @@ public class Game {
 	}
 	
 	private void onKeyRelease(int key) {
-		if(key == KeyEvent.VK_SPACE) {
+		if(key == KeyEvent.VK_SPACE && ball.isInOrbit()) {
 			ball.leaveOrbit(getSolids());
 			ring.setVisible(false);
 		}
  	}
 	
-	private void initWindowStateInput() {
+	private void initWindowAdapter() {
 		frame.addWindowStateListener(windowInput = new WindowInput());
-		//windowInput.addChangeStateAction(WindowEvent.WINDOW_ICONIFIED, e -> onStateChange(WindowEvent.WINDOW_ICONIFIED));
-		//windowInput.addChangeStateAction(WindowEvent.WINDOW_CLOSING, e -> onStateChange(WindowEvent.WINDOW_CLOSING));
+		windowInput.addChangeStateAction(WindowEvent.WINDOW_ICONIFIED, e -> onWindowAction(WindowEvent.WINDOW_ICONIFIED));
+		windowInput.addChangeStateAction(WindowEvent.WINDOW_CLOSING, e -> onWindowAction(WindowEvent.WINDOW_CLOSING));
 	}
 
-	private void onStateChange(int state) {
+	private void onWindowAction(int state) {
 		//TODO was ausdenken
 		if(state == WindowEvent.WINDOW_ICONIFIED)
 			this.exit();
