@@ -36,16 +36,16 @@ public class Game {
 	public Game(Window w) {
 
 		fWidth = w.getContentPane().getWidth();
-		fHeight = w.getContentPane().getHeight();
+		fHeight = w.getContentPane().getHeight() - 200;
 		
 		frame = w;
 		frame.clear();
 		frame.addCamera(camera = new Camera());
 		initKeyInput();
-		initWindowAdapter();
+		initWindowStateInput();
 
 		ball = new Ball(0, Color.WHITE, fWidth);
-		ball.setSpeed(fWidth/frame.getFps());
+		ball.setSpeed(fWidth/frame.getFps() * 1.3);
 		
 		counter = new Counter(fWidth);
 		counter.setLocation(fWidth/16, fWidth/40);
@@ -68,7 +68,7 @@ public class Game {
 		nodes = new ArrayList<>();
 		spawnNode();
 
-		timer  = new Timer(true);
+		timer = new Timer(true);
 		
 		loop();
 	}
@@ -107,7 +107,7 @@ public class Game {
 				
 				//Spiel beenden bei crash;
 				if(ball.hasCrashed()) {
-					exit();
+					timer.cancel();
 				}
 				
 				//bewege Ball... Bewegungen nicht in extra Threads.
@@ -141,7 +141,7 @@ public class Game {
 		double posX, posY;
 		
 		posX = ball.getPos().getX();
-		posY = ball.getPos().getY() - fHeight/6;
+		posY = ball.getPos().getY(); // - fHeight/6;
 		camera.setLocation(posX, posY);
 	}
 	
@@ -221,7 +221,7 @@ public class Game {
 		}
  	}
 	
-	private void initWindowAdapter() {
+	private void initWindowStateInput() {
 		frame.addWindowStateListener(windowInput = new WindowInput());
 		windowInput.addChangeStateAction(WindowEvent.WINDOW_ICONIFIED, e -> onWindowAction(WindowEvent.WINDOW_ICONIFIED));
 		windowInput.addChangeStateAction(WindowEvent.WINDOW_CLOSING, e -> onWindowAction(WindowEvent.WINDOW_CLOSING));

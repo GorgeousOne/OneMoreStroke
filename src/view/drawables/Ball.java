@@ -22,6 +22,9 @@ public class Ball extends Drawable{
 	private double spinRadius;			//Radius von Ball zu seinem Node in einem Orbit
 	private double spinAddition;		//Grad, um die sich Ball jedes Mal in einem Orbit drehen wird
 	
+	double maxHookDist;
+	double maxSpinRadius;
+	
 	//wenn Ball ausserhalb Spielfelds einen Orbit leavt, soll Player  Schutzzeit zum neu Orbit Joinen bekommen
 	private Long crashTimer;				//wann wurde Orbit geleavt, zum Vergleichen bei kommenden Crashes
 	private int crashBuffer;				//Intervall zum neu Joinen
@@ -41,6 +44,10 @@ public class Ball extends Drawable{
 		isSpinning = false;
 		hasCrashed = false;
 		lastNode = null;
+		
+		maxSpinRadius = fWidth/2;
+		maxHookDist = fWidth;
+		
 		crashTimer = new Long(0);
 		crashBuffer = 150;
 	}
@@ -90,9 +97,6 @@ public class Ball extends Drawable{
 		double alpha, adjacent, opposite, hypotenuse, proportion;
 		double crashDistance = fWidth;
 		
-		double maxCatchDist = fWidth;
-		double maxSpinRadius = fWidth;
-		
 		//finde heraus, welche Nodes erreichbar sind
 		for(Node n : visibleNodes) {
 			
@@ -107,7 +111,7 @@ public class Ball extends Drawable{
 			//tada ein rechtwinkliges Dreieck
 			
 			//ist Node zu weit weg? dann ist er auch nicht crash-relevant
-			if(hypotenuse > maxCatchDist || opposite > maxSpinRadius)
+			if(hypotenuse > maxHookDist || opposite > maxSpinRadius)
 				continue;
 			
 			//wuerde Ball beim Umkreisen nicht crashen?
@@ -144,10 +148,9 @@ public class Ball extends Drawable{
 		}
 		
 		if(nextNode == null)
-			if(lastNode != null && lastNode.isVisible() && getPos().distance(lastNode.getPos()) < fWidth/4) {
+			if(lastNode != null && lastNode.isVisible())
 				nextNode = lastNode;
-				System.out.println("weellll");
-			}else
+			else
 				return;
 		
 		//teste, ob Node lings/rechts von Ball ist -> setzte Drehrichtung

@@ -32,7 +32,6 @@ public class Tail extends Drawable{
 	}
 
 	public void update(int fps) {
-		
 		stripe1.update();
 		
 		if(ball.isSpinning() && !ball.getNode().wasConnected())

@@ -30,7 +30,10 @@ public class Node extends Drawable{
 	public boolean wasConnected() {return wasConnected;}
 
 	public void setSpinSpeed(double speed) {spinSpeed = speed;}
-	public void connect() {isConnected = true;}
+	
+	public void connect() {
+		isConnected = true;
+	}
 	
 	public void disconnect() {
 		isConnected = false;
