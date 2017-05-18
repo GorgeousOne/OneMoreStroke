@@ -84,8 +84,6 @@ public class Panel extends JPanel{
 		
 		g2.translate(fWidth/2 - camera.getX(),fHeight/2 -camera.getY());
 
-		g2.setComposite(camera.getAlpha());
-		
 		for(Drawable d : shapes) {
 			try {
 				d.fill(g2);

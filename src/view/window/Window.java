@@ -1,6 +1,7 @@
 package view.window;
 
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class Window extends JFrame{
 		
 		panel = new Panel();
 		getContentPane().add(panel);
+		loadIconImage("/res/images/Icon.png");
 		
 		fps = 60;
 	}
@@ -75,5 +77,10 @@ public class Window extends JFrame{
 		pack();
 		panel.setSize(getContentPane().getSize());
 		setVisible(true);
+	}
+	
+	@Override
+	public void paint(Graphics g) {
+		panel.repaint();
 	}
 }

@@ -3,6 +3,7 @@ package view.drawables;
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 public class DashedRing extends Drawable{
@@ -15,6 +16,12 @@ public class DashedRing extends Drawable{
 		setColor(color);
 	}
 
+	public void appear(Point2D p, double radius) {
+		setPos(p);
+		setScale(radius/100, radius/100);
+		setVisible(true);
+	}
+	
 	public static Area createShape(double width, int segments) {
 		
 		double angle = Math.PI/segments;

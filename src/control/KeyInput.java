@@ -26,12 +26,16 @@ public class KeyInput extends KeyAdapter{
 	
 	@Override
 	public void keyPressed(KeyEvent e) {
+		super.keyPressed(e);
+		
 		if(keyPressActions.containsKey(e.getKeyCode()))
 			keyPressActions.get(e.getKeyCode()).actionPerformed(null);
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
+		super.keyReleased(e);
+		
 		if(keyReleaseActions.containsKey(e.getKeyCode()))
 			keyReleaseActions.get(e.getKeyCode()).actionPerformed(null);
 	}

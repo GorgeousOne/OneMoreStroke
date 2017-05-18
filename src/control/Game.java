@@ -1,12 +1,11 @@
 package control;
 
 import java.awt.Color;
-import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-
 
 import view.components.Counter;
 import view.drawables.*;
@@ -18,8 +17,7 @@ public class Game {
 	private Window frame;			//JFrame
 	private Camera camera;
 	private KeyInput keyInput;
-	@SuppressWarnings("unused")
-	private MouseInput mouseInput;
+	private WindowInput windowInput;
 	
 	private Ball ball;				//Geschoss, mit dem gespielt wird
 	private Tail tail;
@@ -34,21 +32,19 @@ public class Game {
 	
 	private Timer timer;
 	private int fWidth, fHeight;	//Groesse des Frames fuer JPanel
-	private Rectangle screen;
 
 	public Game(Window w) {
 
 		fWidth = w.getContentPane().getWidth();
 		fHeight = w.getContentPane().getHeight();
-		screen = new Rectangle(0, 0, fWidth, fHeight);
 		
 		frame = w;
 		frame.clear();
 		frame.addCamera(camera = new Camera());
 		initKeyInput();
+		initWindowStateInput();
 
 		ball = new Ball(0, Color.WHITE, fWidth);
-		System.out.println(ball.getPos());
 		ball.setSpeed(fWidth/frame.getFps() * 1.3);
 		
 		counter = new Counter(fWidth);
@@ -59,7 +55,7 @@ public class Game {
 		rope = new Rope(3, Color.WHITE, ball.getPos(), fWidth/150);
 		ring = new DashedRing(4, Drawable.ORANGE, 64, fWidth/200);
 		wall = new Wall(5, Drawable.RED, fWidth, fHeight, camera);
-		background = new Background(6, screen, camera);
+		background = new Background(6, fWidth, fHeight, camera);
 
 		frame.addDrawable(ball);
 		frame.addDrawable(tail);
@@ -83,13 +79,10 @@ public class Game {
 		Runnable r = new Runnable() {
 			@Override
 			public void run() {
-				
+
 				//male gestrichelten Ring um umkreiste Nodes
-				if(ball.isSpinning() && !ring.isVisible()) {
-					ring.setPos(ball.getNode().getPos());
-					ring.setScale(ball.getSpinRadius() / 100, ball.getSpinRadius() / 100);
-					ring.setVisible(true);
-				}
+				if(ball.isSpinning() && !ring.isVisible())
+					ring.appear(ball.getNode().getPos(), ball.getSpinRadius());
 				
 				//ueberpruefe crashes und connecte mit Nodes
 				ball.update(getSolids());
@@ -114,7 +107,7 @@ public class Game {
 				
 				//Spiel beenden bei crash;
 				if(ball.hasCrashed()) {
-					exit();
+					timer.cancel();
 				}
 				
 				//bewege Ball... Bewegungen nicht in extra Threads.
@@ -194,7 +187,7 @@ public class Game {
 		ArrayList<Node> visNodes = new ArrayList<>();
 		
 		for(Node n : nodes)
-			if(Math.abs(camera.getY() - n.getPos().getY()) < fHeight/2 + n.getRadius())
+			if(Math.abs(camera.getY() - n.getPos().getY()) < fHeight/2/camera.getZoom() + n.getRadius())
 				visNodes.add(n);
 		return visNodes;
 	}
@@ -222,9 +215,26 @@ public class Game {
 	}
 	
 	private void onKeyRelease(int key) {
-		if(key == KeyEvent.VK_SPACE)
+		if(key == KeyEvent.VK_SPACE) {
 			ball.leaveOrbit(getSolids());
+			ring.setVisible(false);
+		}
  	}
+	
+	private void initWindowStateInput() {
+		frame.addWindowStateListener(windowInput = new WindowInput());
+		//windowInput.addChangeStateAction(WindowEvent.WINDOW_ICONIFIED, e -> onStateChange(WindowEvent.WINDOW_ICONIFIED));
+		//windowInput.addChangeStateAction(WindowEvent.WINDOW_CLOSING, e -> onStateChange(WindowEvent.WINDOW_CLOSING));
+	}
+
+	private void onStateChange(int state) {
+		//TODO was ausdenken
+		if(state == WindowEvent.WINDOW_ICONIFIED)
+			this.exit();
+		
+		if(state == WindowEvent.WINDOW_CLOSING)
+			System.out.println("closing");
+	}
 	
 	public void exit() {
 		timer.cancel();

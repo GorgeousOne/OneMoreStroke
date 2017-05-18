@@ -10,6 +10,7 @@ public class Node extends Drawable{
 	private static double radius = 100;
 	private double spinSpeed;
 	private boolean isConnected;
+	private boolean wasConnected;
 	private final Color primaryColor;
 	
 	public Node(int layer, Color color) {
@@ -20,16 +21,21 @@ public class Node extends Drawable{
 
 		spinSpeed = Math.random() * Math.PI/16 - Math.PI/32;
 		isConnected = false;
+		wasConnected  = false;
 		primaryColor = color;
 	}
 
 	public double getRadius() {return radius*getScale().getX();}
-	public boolean isConnected() {return isConnected;}
 	public Color getPrimaryColor() {return primaryColor;}
-	
+	public boolean wasConnected() {return wasConnected;}
+
 	public void setSpinSpeed(double speed) {spinSpeed = speed;}
 	public void connect() {isConnected = true;}
-	public void disconnect() {isConnected = false;}
+	
+	public void disconnect() {
+		isConnected = false;
+		wasConnected = true;
+	}
 
 	public void update(int fps) {
 		rotate(spinSpeed);
