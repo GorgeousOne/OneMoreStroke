@@ -22,6 +22,8 @@ public class Panel extends JPanel{
 	private Camera camera;
 	
 	public Panel() {
+		
+		System.out.println(getLayout());
 		fWidth = fHeight = 1;
 		buffer = new BufferedImage(fWidth, fHeight, BufferedImage.TYPE_3BYTE_BGR);
 		shapes = new ArrayList<>();
@@ -35,6 +37,7 @@ public class Panel extends JPanel{
 	public void addCamera(Camera camera) {
 		this.camera = camera;
 	}
+	
 	public ArrayList<Drawable> getDrawables() {
 		return shapes;
 	}

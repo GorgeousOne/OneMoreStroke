@@ -15,12 +15,13 @@ public class Drawable {
 	public static final Color ORANGE = new Color(246, 130, 34);
 	public static final Color PURPLE = new Color(157, 63, 255);
 	
-	public static final Color GRAY = new Color(60, 60, 60);
 	public static final Color LIGHT_GRAY = new Color(180, 180, 180);
+	public static final Color GRAY = new Color(60, 60, 60);
+	public static final Color MIDDLE_GRAY = new Color(55, 55, 55);
 	public static final Color DARK_GRAY = new Color(50, 50, 50);
 	
-	private static Color[] NEON_COLORS = {BLUE, YELLOW, LIGHT_BLUE, RED, 
-										  GREEN, ORANGE, PURPLE};
+	private static final Color[] NEON_COLORS = {BLUE, YELLOW, LIGHT_BLUE, RED, 
+												GREEN, ORANGE, PURPLE};
 	
 	protected Shape shape;
 	private Color color;
@@ -46,9 +47,9 @@ public class Drawable {
 	
 	//berechnet Shape neu nach Position, Scale, etc.
 	public Area getShape() {
+
 		AffineTransform at = new AffineTransform();
 		at.rotate(rotation, pos.getX(), pos.getY());
-
 		at.translate(pos.getX(), pos.getY());
 		at.scale(scale.getX(), scale.getY());	//scale nur hier
 
@@ -74,7 +75,9 @@ public class Drawable {
 	public void setPos(Point2D pos) {this.pos = pos;}
 	public void setPos(double posX, double posY) {pos.setLocation(posX, posY);}
 	
-	public void translate(double dX, double dY) {pos.setLocation(dX, dY);}
+	public void translate(double dX, double dY) {
+		pos.setLocation(pos.getX() + dX, pos.getY() + dY);
+	}
 	
 	public void setRotation(double rotation) {
 		this.rotation = rotation;
@@ -95,7 +98,6 @@ public class Drawable {
 	}
 	
 	public void fill(Graphics g) {
-
 		if(shape == null || !isVisible)
 			return;
 		
@@ -105,8 +107,6 @@ public class Drawable {
 	}
 	
 	public void brightenUp(int speed) {
-		if(speed <= 0)
-			return;
 		
 		int dRed = color.getRed() <= 255 - speed? speed : 255 - color.getRed();
 		int dGreen = color.getGreen() <= 255 - speed? speed : 255 - color.getGreen();

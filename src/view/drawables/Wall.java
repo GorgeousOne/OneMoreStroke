@@ -1,6 +1,7 @@
 package view.drawables;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 
@@ -28,8 +29,13 @@ public class Wall extends Drawable{
 		shape.add	(new Area(new Rectangle( fWidth/2 + fWidth/80, -fHeight/2, fWidth/80, fHeight)));
 		return shape;
 	}
-	public void update() {
+	
+	@Override
+	public void fill(Graphics g) {
+		
 		setPos(getPos().getX(), camera.getY());
 		setScale(1, 1/camera.getZoom());
+		
+		super.fill(g);
 	}
 }

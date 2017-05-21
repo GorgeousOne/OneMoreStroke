@@ -1,6 +1,7 @@
 package view.drawables;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
@@ -8,7 +9,7 @@ import java.awt.geom.Rectangle2D;
 public class Node extends Drawable{
 
 	private static double radius = 100;
-	private double spinSpeed;
+	private double spin;
 	private boolean isConnected;
 	private boolean wasConnected;
 	private final Color primaryColor;
@@ -19,7 +20,7 @@ public class Node extends Drawable{
 		setVisible(false);
 		setColor(color);
 
-		spinSpeed = Math.random() * Math.PI/16 - Math.PI/32;
+		spin = Math.random() * Math.PI/16 - Math.PI/32;
 		isConnected = false;
 		wasConnected  = false;
 		primaryColor = color;
@@ -29,7 +30,7 @@ public class Node extends Drawable{
 	public Color getPrimaryColor() {return primaryColor;}
 	public boolean wasConnected() {return wasConnected;}
 
-	public void setSpinSpeed(double speed) {spinSpeed = speed;}
+	public void setSpinSpeed(double speed) {spin = speed;}
 	
 	public void connect() {
 		isConnected = true;
@@ -40,11 +41,15 @@ public class Node extends Drawable{
 		wasConnected = true;
 	}
 
-	public void update(int fps) {
-		rotate(spinSpeed);
+	@Override
+	public void fill(Graphics g) {
 		
 		if(isConnected == true && getColor() != Color.WHITE)
-			brightenUp(fps/10);
+			brightenUp(5);
+		
+		rotate(spin);
+
+		super.fill(g);
 	}
 	
 	public static Area rndSkin() {

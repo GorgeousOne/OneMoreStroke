@@ -9,7 +9,7 @@ public class Ball extends Drawable{
 	private static int LEFT = -1;		//gibt die Drehrichtung von Ball im Orbit um einen Node an.
 	private static int RIGHT = 1;		//je nach Richtung werden all Drehungen mit -1/+1 multipliziert -> keine Abfragen mehr
 	
-	private static double radius = 1;	//Radius fuer Ball, eig Groesse wird mit setScale() gemacht
+	private static double radius;		//Radius fuer Ball, eig Groesse wird mit setScale() gemacht
 	private double speed;				//Geschwindigkeit in Pixeln, mit der sich Ball pro Frame vorbewegt
 	private int fWidth;
 
@@ -20,7 +20,7 @@ public class Ball extends Drawable{
 	private Node lastNode;				//haelt fest, um welchen Node sich Ball gerade dreht/zuletzt drehte
 	private int spinDirection;			//Vorfaktor, der bestimmt, ob Ball nach links/rechts dreht
 	private double spinRadius;			//Radius von Ball zu seinem Node in einem Orbit
-	private double spinAddition;		//Grad, um die sich Ball jedes Mal in einem Orbit drehen wird
+	private double spinAddition;		//Winkel, den Ball in Orbit immer 2x drehen wird um auf Kreisbahn zu bleiben
 	
 	double maxHookDist;
 	double maxSpinRadius;
@@ -35,11 +35,11 @@ public class Ball extends Drawable{
 		setColor(color);
 		setPos(fWidth/2, 0);
 		setRotation(Math.PI * 3/2);
-		setScale(fWidth/40.0, fWidth/40);
+		setScale(fWidth/240.0, fWidth/240.0);
 	
 		this.fWidth = fWidth;
 		
-		speed = 0;
+		speed = 1;
 		isInOrbit = false;
 		isSpinning = false;
 		hasCrashed = false;
@@ -53,19 +53,13 @@ public class Ball extends Drawable{
 	}
 
 	private static Area createShape() {
-		Area shape = 	 new Area(new Ellipse2D.Double	(-radius, -radius, 2*radius, 2*radius));
-		shape.subtract	(new Area(new Ellipse2D.Double	(-radius*2/3, -radius*2/3, radius * 4/3, radius * 4/3)));
-		shape.add		(new Area(new Ellipse2D.Double	(-radius/3, -radius/3, radius*2/3, radius*2/3)));
-		shape.add		(new Area(new Rectangle2D.Double(-radius, -radius, radius, 2*radius)));
-		shape.subtract	(new Area(new Rectangle2D.Double(-radius, -radius, radius*2/3, 2*radius)));
-		return shape;
-		
-		/*Area shape = 	 new Area(new Ellipse2D.Double	(-6, -6, 12, 12));
-		shape.subtract	(new Area(new Ellipse2D.Double	(-4, -4,  8, 8)));
-		shape.add		(new Area(new Ellipse2D.Double	(-2, -2,  4, 4)));
+		radius = 6;
+		Area shape = 	 new Area(new Ellipse2D.Double	(-6, -6, 12, 12));
+		shape.subtract	(new Area(new Ellipse2D.Double	(-4, -4,  8,  8)));
+		shape.add		(new Area(new Ellipse2D.Double	(-2, -2,  4,  4)));
 		shape.add		(new Area(new Rectangle2D.Double(-6, -6,  6, 12)));
 		shape.subtract	(new Area(new Rectangle2D.Double(-6, -6,  4, 12)));
-		return shape;*/
+		return shape;
 	}
 	
 	public double getSpeed() {return speed;}
@@ -167,13 +161,16 @@ public class Ball extends Drawable{
 	}
 
 	public void leaveOrbit(ArrayList<Drawable> solids) {
-		isInOrbit = false;
-		isSpinning = false;
-		lastNode.disconnect();
+		//sonst geht das mit der Tail Farbe manchmal nicht
+		if(isSpinning)
+			lastNode.disconnect();
 		
 		//wenn Ball ausserhalb Spielfelds Orbit leavt, wird crashTimer geupdated
 		if(getPos().getX() < 40 - radius/2 || getPos().getX() > fWidth - 40)		//40 ist die Dicke der Mauer, hab grad keine Variable dafuer
 			crashTimer = System.currentTimeMillis();
+		
+		isInOrbit = false;
+		isSpinning = false;
 	}
 	
 	public void update(ArrayList<Drawable> solids) {
@@ -195,8 +192,9 @@ public class Ball extends Drawable{
 			isSpinning  = true;
 			spinRadius = getPos().distance(lastNode.getPos());
 			
-			//cos Alpha(Winkel zum Node) = Hypotenuse(spinRadius) / Gegenkathete(speed/2)
-			//180° - Alpha, da sich Ball nur um Gegenwinkel von berechnetem Winkel dreht
+			//spinAddition ist der Winkel, mit dem Ball wieder 90° zu Node steht
+			//cos Alpha(spinAddition) = Hypotenuse(spinRadius) / Gegenkathete(speed/2)
+			//Ball dreht sich um Gegenwinkel von berechnetem Winkel -> PI - Alpha
 			//Ball kommt schraeg aus einer Richtung, geht schraeg in andere Richtung -> 2xAlpha
 			spinAddition = Math.PI - 2*(Math.acos(speed/2 / spinRadius));
 			setRotation(getAngleTo(lastNode.getPos()) - spinDirection * (Math.PI/2));
@@ -240,20 +238,17 @@ public class Ball extends Drawable{
 			//wenn Ball geschuetzt crashe trotzdem an allen Nodes ausser dem Umkreisten
 			if(d instanceof Node && !d.equals(lastNode))
 				return true;
-			//andere Objekte sind, wenn Ball in Orbit, nicht wichtig
-			if(isInOrbit())
-				continue;
-			//wenn Ball nicht geschuetzt ist -> alles crash
-			if(crashTimer + crashBuffer < System.currentTimeMillis())
+			//andere Objekte sind, wenn Ball nicht in Orbit -> crash
+			if(!isInOrbit())
 				return true;
 		}	
 		
-		//wenn nicht in einem Orbit und Schutzzeit abgelaufen oder Ball fliegt nach nur nach unten
-		if(!isInOrbit && crashTimer + crashBuffer < System.currentTimeMillis())
-			//und Ball ausserhalb des Spielfelds -> crash
-			if(getPos().getX() < -40 + radius/2 || 
-			   getPos().getX() > fWidth + 40 - radius/2 ||
-			   getPos().getY() > 2*fWidth)
+		//wenn Ball ausserhalb des Spielfelds oder fliegt nach unten
+		if(getPos().getX() < -40 || 
+		   getPos().getX() > fWidth + 40 ||
+		   getPos().getY() > 2*fWidth)
+			//und nicht in Orbit und Schutzzeit abgelaufen oder Ball -> crash
+			if(!isInOrbit && crashTimer + crashBuffer < System.currentTimeMillis())
 				return true;
 		
 		return false;

@@ -17,19 +17,15 @@ public class Rope extends Drawable{
 
 	
 	public Rope(int layer, Color color, Point2D ballPos, float width) {
-		super(createShape(), layer);
+		super(null, layer);
 		setVisible(false);
 		setColor(color);
 		setPos(ballPos);
 		
 		this.width = width;
-		this.line = createShape();
+		this.line = new Line2D.Double();
 		this.ballPos = ballPos;
 		this.isConnected = false;
-	}
-
-	private static Line2D createShape() {
-		return new Line2D.Double(0, 0, 0, 0);
 	}
 
 	public boolean isConnected() {return isConnected;}
@@ -46,22 +42,17 @@ public class Rope extends Drawable{
 		setVisible(false);
 	}
 	
-	public void update(int fps) {
-		if(!isConnected)
+	@Override
+	public void fill(Graphics g) {
+		
+		if(!isVisible() || !isConnected)
 			return;
 		
 		line.setLine(ballPos, line.getP2());
 
 		if(!getColor().equals(nodeColor))
-			courseColorTo(nodeColor, fps/10);
-	}
-	
-	@Override
-	public void fill(Graphics g) {
+			courseColorTo(nodeColor, 5);
 		
-		if(!isVisible())
-			return;
-
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(getColor());
 		g2.setStroke(new BasicStroke(width));

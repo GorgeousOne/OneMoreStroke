@@ -3,7 +3,6 @@ package view.drawables;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.awt.RenderingHints;
 import java.awt.geom.Area;
 
 import view.window.Camera;
@@ -34,48 +33,51 @@ public class Background extends Drawable{
 	public void fill(Graphics g) {
 		
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); 
 		
 		g2.setColor(Drawable.DARK_GRAY);
 		g2.fillRect(0, (int) (camera.getY() - fHeight/2/camera.getZoom()), fWidth, (int) (fHeight/camera.getZoom()));
 		
 		//fHeight, bloss auf den camera-zoom angepasst
 		int sHeight = (int) (fHeight / camera.getZoom());
-		//Auslenkung des Hintergrunds bei x-Bewegung des Balls
-		int sShake = (int) (camera.x-fWidth/2) / 4;
+		
+		//Auslenkung des Hintergrunds bei Bewegung weil der soll ja perspektivisch wirken
+		int shiftX = (int) (camera.x-fWidth/2) / 4;							//einfch 1/4 Camera.x
+		int shiftY = (int) (camera.y/4 % (height * getScale().getX()));		//1/4 Camera.y; Reset(durch %) nach 1x Shapelaenge
 		
 		//Wert, bei dem Tiles angefangen werden zu malen; das wird immer x TilesLaenge genommen
-		double tilesY = Math.floor((camera.y - sHeight/2) / (height * getScale().getX()));
+		double tilesY = Math.floor((camera.y - sHeight/2 + shiftY) / (height * getScale().getX()));
 		
 		//Hintergrund nicht ueber Raender malen
 		g2.clipRect(0, (int) (camera.y - sHeight/2), fWidth, sHeight);
 		g2.setColor(Drawable.MIDDLE_GRAY);
 		
-		while(tilesY * height*getScale().getX() < camera.y + sHeight/2) {
-			g2.translate( fWidth/2 + sShake,  tilesY * height*getScale().getX());
+		while(tilesY * height*getScale().getX() + shiftY < camera.y + sHeight/2) {
+			g2.translate( fWidth/2 + shiftX,  tilesY * height*getScale().getX() + shiftY);
 			g2.fill(getShape());
-			g2.translate(-fWidth/2 - sShake, -tilesY * height*getScale().getX());
+			g2.translate(-fWidth/2 - shiftX, -tilesY * height*getScale().getX() - shiftY);
 
 			tilesY++;
 		}
 		
-		double gridX = (int) (-sShake / getScale().getX());
+		double gridX = (int) (-shiftX / getScale().getX());
 		double gridY = Math.floor((camera.y - sHeight/2) / getScale().getX());
 		
 		g2.setColor(Drawable.GRAY);
 		
-		while(gridX * getScale().getX() < fWidth - sShake) {
-			g2.drawLine((int) (gridX * getScale().getX()) + sShake, (int) (camera.y - sHeight/2), 
-						(int) (gridX * getScale().getX()) + sShake, (int) (camera.y + sHeight/2));
+		//Laengsstreifen
+		while(gridX * getScale().getX() + shiftX < fWidth) {
+			g2.drawLine((int) (gridX * getScale().getX()) + shiftX, (int) (camera.y - sHeight/2), 
+						(int) (gridX * getScale().getX()) + shiftX, (int) (camera.y + sHeight/2));
 			gridX += 1;
 		}
 		
-		while(gridY * height*getScale().getX() < camera.y + sHeight) {
-			g2.drawLine(0, (int) (gridY * getScale().getX()), 
-				   fWidth, (int) (gridY * getScale().getX()));
+		//Querstreifen
+		while(gridY * getScale().getX() + shiftY < camera.y + sHeight/2) {
+			g2.drawLine(0, (int) (gridY * getScale().getX()) + shiftY, 
+				   fWidth, (int) (gridY * getScale().getX()) + shiftY);
 			gridY++;
 		}
-
+		
 		g2.setClip(null);
 	}
 	

@@ -1,8 +1,10 @@
 package view.components;
 	
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -24,7 +26,7 @@ public class Button extends JComponent {
 	public Button() {
 		
 		super();
-		setBounds(0, 0, 50, 50);
+		setPreferredSize(new Dimension(50, 50));
 		fading = getBackground();
 		
 		initMouseListener();
@@ -34,7 +36,7 @@ public class Button extends JComponent {
 		actionListener = al;
 	}
 
-	private void animation() {
+	private void animation(boolean gotClicked) {
 		
 		if(t != null)
 			t.interrupt();
@@ -51,8 +53,11 @@ public class Button extends JComponent {
 						return;
 					}
 				}
-				actionListener.actionPerformed(null);
+				
 				isPressed = false;
+
+				if(gotClicked)
+					actionListener.actionPerformed(null);
 			}
 		});
 		t.start();
@@ -70,7 +75,7 @@ public class Button extends JComponent {
 			public void run() {
 				
 				for(int i = 0; i < 60; i++) {
-					 
+					
 					try {
 						Thread.sleep(1000/60);
 					} catch (InterruptedException e) {
@@ -94,10 +99,10 @@ public class Button extends JComponent {
 			g2.setClip(-getX(), 0, getParent().getWidth(), getWidth());
 			g2.fillRect(-getX(), 0, getParent().getWidth(), getWidth());
 		
-		}else {
-			g2.setColor(getBackground());
-			g2.fillRect(0, 0, getWidth(), getHeight());
 		}
+
+		g2.setColor(getBackground());
+		g2.fillRect(0, 0, getWidth(), getHeight());
 	}
 	
 	public void initMouseListener() {
@@ -116,8 +121,10 @@ public class Button extends JComponent {
 			
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				boolean gotClicked = getBounds().contains(new Point(e.getX() + getX(), e.getY() + getY()));
+				
 				if(SwingUtilities.isLeftMouseButton(e))
-					animation();
+					animation(gotClicked);
 			}
 		});
 	}

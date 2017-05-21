@@ -27,6 +27,8 @@ public class OneMoreMain {
 		frame.setLocation((int) (screenSize.getWidth()/2 - fWidth/2) , taskbar.top);
 		frame.activate();
 		
+		System.out.println(frame.getLayout());
+		
 		new Menu(frame);
 	}
 	

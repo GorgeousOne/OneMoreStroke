@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import control.listener.KeyInput;
+import control.listener.WindowInput;
 import view.components.Counter;
 import view.drawables.*;
 import view.window.Camera;
@@ -36,7 +38,7 @@ public class Game {
 	public Game(Window w) {
 
 		fWidth = w.getContentPane().getWidth();
-		fHeight = w.getContentPane().getHeight() - 200;
+		fHeight = w.getContentPane().getHeight();
 		
 		frame = w;
 		frame.clear();
@@ -44,14 +46,16 @@ public class Game {
 		initKeyInput();
 		initWindowStateInput();
 
-		ball = new Ball(0, Color.WHITE, fWidth);
+		//camera.setZoom(0.5f);
+		
+		ball = new Ball(1, Color.WHITE, fWidth);
 		ball.setSpeed(fWidth/frame.getFps() * 1.3);
 		
 		counter = new Counter(fWidth);
 		counter.setLocation(fWidth/16, fWidth/40);
 		counter.setPointDistance(ball.getSpeed() * frame.getFps()/3); //wenn Ball gerade fliegt, dauert ein Score-Punkt 1/3s
 
-		tail = new Tail(1, Color.WHITE, ball, fHeight, camera);
+		tail = new Tail(2, Color.WHITE, ball, fHeight, camera);
 		rope = new Rope(3, Color.WHITE, ball.getPos(), fWidth/150);
 		ring = new DashedRing(4, Drawable.ORANGE, 64, fWidth/200);
 		wall = new Wall(5, Drawable.RED, fWidth, fHeight, camera);
@@ -69,7 +73,6 @@ public class Game {
 		spawnNode();
 
 		timer = new Timer(true);
-		
 		loop();
 	}
 	
@@ -123,14 +126,10 @@ public class Game {
 					if(getVisibleNodes().contains(n)) {
 						if(!n.isVisible())
 							n.setVisible(true);
-						n.update(frame.getFps());
 					}else if(n.isVisible())
 						n.setVisible(false);
 				
 				//restliche Updates... lies selber nach was die machen
-				rope.update(frame.getFps());
-				wall.update();
-				tail.update(frame.getFps());
 				frame.repaint();
 			}
 		}, 0, 1000/frame.getFps());
@@ -140,8 +139,8 @@ public class Game {
 	private void moveCamera() {
 		double posX, posY;
 		
-		posX = ball.getPos().getX();
-		posY = ball.getPos().getY(); // - fHeight/6;
+		posX = fWidth/2 + (ball.getPos().getX() - fWidth/2) * 3/4;
+		posY = ball.getPos().getY() - fHeight/6;
 		camera.setLocation(posX, posY);
 	}
 	
@@ -157,7 +156,7 @@ public class Game {
 			posY = -4*counter.getPointDistance();						
 			scale = fWidth/5000d;
 			
-			n = new Node(2, Drawable.BLUE);
+			n = new Node(0, Drawable.BLUE);
 			n.setScale(scale, scale);
 			n.setPos(posX, posY);
 		

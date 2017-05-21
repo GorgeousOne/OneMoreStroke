@@ -1,5 +1,6 @@
 package control;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Timer;
@@ -37,6 +38,8 @@ public class Menu {
 		frame.add(start);
 
 		start.setBackground(Drawable.RED);
+		
+		start.setPreferredSize(new Dimension(fWidth/6, fWidth/6));
 		start.setBounds(0, 0, fWidth/6, fWidth/6);
 		start.setLocation(fWidth*5/6, fWidth/6);
 		start.addActionListener(new ActionListener() {

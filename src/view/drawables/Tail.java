@@ -31,20 +31,16 @@ public class Tail extends Drawable{
 		stripe1 = new Stripe();
 	}
 
-	public void update(int fps) {
+	@Override
+	public void fill(Graphics g) {
+		
 		stripe1.update();
 		
 		if(ball.isSpinning() && !ball.getNode().wasConnected())
 			lastNode = ball.getNode();
 		
-		if(lastNode != null && !getColor().equals(lastNode.getPrimaryColor())) {
-			//System.out.println(!ball.getNode().gotTouched());
-			courseColorTo(ball.getNode().getPrimaryColor(), fps/5);
-		}
-	}
-	
-	@Override
-	public void fill(Graphics g) {
+		if(lastNode != null && !getColor().equals(lastNode.getPrimaryColor()))
+			courseColorTo(ball.getNode().getPrimaryColor(), 5);
 		
 		if(stripe1.segments.size() < 2)
 			return;
@@ -55,14 +51,16 @@ public class Tail extends Drawable{
 		g2.setColor(getColor());
 		g2.setStroke(new BasicStroke(fHeight/100f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
 
+		double sHeight = fHeight/camera.getZoom();
+
 		Path2D path = new Path2D.Double();
 		path.moveTo(segments.get(0).getX(), segments.get(0).getY());
 		
-		for(int i = 1; i < segments.size()-3; i++)		
-			if(segments.get(i).getY() > camera.getY() - fHeight/2/camera.getZoom() &&
-			   segments.get(i).getY() < camera.getY() + fHeight/2/camera.getZoom() ||
-			   segments.get(i+1).getY() > camera.getY() - fHeight/2/camera.getZoom() &&
-			   segments.get(i+1).getY() < camera.getY() + fHeight/2/camera.getZoom())
+		for(int i = 1; i < segments.size()-3; i++)
+			if(segments.get(i).getY() > camera.getY() - sHeight/2 &&		//ist Punkt sichbar?
+			   segments.get(i).getY() < camera.getY() + sHeight/2 ||
+			   segments.get(i+1).getY() > camera.getY() - sHeight/2 &&		//ist naechster Punkt sichtbar?
+			   segments.get(i+1).getY() < camera.getY() + sHeight/2)
 				path.lineTo(segments.get(i).getX(), segments.get(i).getY());
 			else
 				path.moveTo(segments.get(i).getX(), segments.get(i).getY());
@@ -70,7 +68,7 @@ public class Tail extends Drawable{
 		g2.draw(path);
 	}
 	
-	public class Stripe {
+	private class Stripe {
 		
 		private ArrayList<Point2D> segments;
 		
