@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.geom.Area;
+import java.awt.geom.Line2D;
 
 import view.window.Camera;
 
@@ -12,8 +13,8 @@ public class Background extends Drawable{
 	@SuppressWarnings("unused")
 	private Area grid;
 	
-	private final double width = 16;
-	private final double height = 42;
+	private final int width = 16;
+	private final int height = 42;
 	
 	private int fWidth, fHeight;
 	private Camera camera;
@@ -25,13 +26,14 @@ public class Background extends Drawable{
 		this.fHeight = fHeight;
 		this.camera = camera;
 		
-		setScale(fWidth/width, fWidth/width);
-		
+		setScale((double) fWidth/width, (double) fWidth/width);
 	}
 	
 	@Override
 	public void fill(Graphics g) {
 		
+		long time = System.currentTimeMillis();
+
 		Graphics2D g2 = (Graphics2D) g;
 		
 		g2.setColor(Drawable.DARK_GRAY);
@@ -41,16 +43,20 @@ public class Background extends Drawable{
 		int sHeight = (int) (fHeight / camera.getZoom());
 		
 		//Auslenkung des Hintergrunds bei Bewegung weil der soll ja perspektivisch wirken
-		int shiftX = (int) (camera.x-fWidth/2) / 4;							//einfch 1/4 Camera.x
-		int shiftY = (int) (camera.y/4 % (height * getScale().getX()));		//1/4 Camera.y; Reset(durch %) nach 1x Shapelaenge
+		double shiftX = camera.x/4 - fWidth/8;							//einfch 1/4 Camera.x
+		double shiftY = camera.y/4 % (height * getScale().getX());		//1/4 Camera.y; Reset(durch %) nach 1x Shapelaenge
 		
 		//Wert, bei dem Tiles angefangen werden zu malen; das wird immer x TilesLaenge genommen
-		double tilesY = Math.floor((camera.y - sHeight/2 + shiftY) / (height * getScale().getX()));
+		double tilesY = Math.floor((camera.y - sHeight/2 - shiftY) / (height * getScale().getX()));
 		
+		double gridX = Math.ceil(-shiftX / getScale().getX());
+		double gridY = Math.ceil((camera.y - sHeight/2 - shiftY) / getScale().getX());
+
 		//Hintergrund nicht ueber Raender malen
 		g2.clipRect(0, (int) (camera.y - sHeight/2), fWidth, sHeight);
 		g2.setColor(Drawable.MIDDLE_GRAY);
 		
+		//das Muster
 		while(tilesY * height*getScale().getX() + shiftY < camera.y + sHeight/2) {
 			g2.translate( fWidth/2 + shiftX,  tilesY * height*getScale().getX() + shiftY);
 			g2.fill(getShape());
@@ -59,25 +65,23 @@ public class Background extends Drawable{
 			tilesY++;
 		}
 		
-		double gridX = (int) (-shiftX / getScale().getX());
-		double gridY = Math.floor((camera.y - sHeight/2) / getScale().getX());
-		
 		g2.setColor(Drawable.GRAY);
 		
 		//Laengsstreifen
 		while(gridX * getScale().getX() + shiftX < fWidth) {
-			g2.drawLine((int) (gridX * getScale().getX()) + shiftX, (int) (camera.y - sHeight/2), 
-						(int) (gridX * getScale().getX()) + shiftX, (int) (camera.y + sHeight/2));
-			gridX += 1;
+			g2.draw(new Line2D.Double(gridX * getScale().getX() + shiftX, camera.y - sHeight/2, 
+									  gridX * getScale().getX() + shiftX, camera.y + sHeight/2));
+			gridX++;
 		}
 		
 		//Querstreifen
 		while(gridY * getScale().getX() + shiftY < camera.y + sHeight/2) {
-			g2.drawLine(0, (int) (gridY * getScale().getX()) + shiftY, 
-				   fWidth, (int) (gridY * getScale().getX()) + shiftY);
+			g2.draw(new Line2D.Double(0, gridY * getScale().getX() + shiftY, 
+								 fWidth, gridY * getScale().getX() + shiftY));
 			gridY++;
 		}
 		
+		System.out.println(System.currentTimeMillis() - time);
 		g2.setClip(null);
 	}
 	
