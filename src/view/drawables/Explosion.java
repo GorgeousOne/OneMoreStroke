@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.geom.Area;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -82,8 +83,6 @@ public class Explosion extends Drawable {
 		private Vector2D speed;
 		private double friction;
 		
-		private Area intersect;
-		
 		public Particle(Point2D center, double radius, double speed, double friction) {
 			super(createTriangle(radius), 0);
 			
@@ -104,21 +103,49 @@ public class Explosion extends Drawable {
 			
 			for(Drawable d : solids) {
 				
-				intersect = (Area) getShape();
+				Area intersect = new Area(getShape());
 				intersect.intersect((Area) d.getShape());
-				
+
 				if(!intersect.isEmpty()) {
-					
-					Point2D center = new Point2D.Double(intersect.getBounds2D().getCenterX(),
-														intersect.getBounds2D().getCenterY());
-					
-					double pushAngle = getAngleBetween(getAngleTo(center));
-					double radius = getPos().distance(center);
-					
+
+					System.out.println();
 					translate(-speed.getX(), -speed.getY());
 					rotate(-spin);
 					
-					speed.negate().multiply(Math.cos(pushAngle));
+					Area rest = new Area(getShape());
+					rest.subtract(intersect);
+					
+					ArrayList<Point2D.Double> edges = new ArrayList<>();
+					PathIterator iter = intersect.getPathIterator(null);
+
+					double[] coords = new double[6];
+					int type;
+					
+					while(!iter.isDone()) {
+						type = iter.currentSegment(coords);
+						if(type == PathIterator.SEG_LINETO) {
+							Point2D p = new Point2D.Double((int) coords[0], (int) coords[1]);
+							if(!edges.contains(p) && edges.size() < 2)
+								edges.add(new Point2D.Double((int) coords[0], (int) coords[1]));
+						}
+						iter.next();
+					}
+					
+					if(edges.size() != 2)
+						return;
+					
+					double surfaceAngle = getAngleTo(edges.get(0), edges.get(1));
+					double hitAngle = surfaceAngle - speed.getAngle();
+					double leaveAngle = surfaceAngle + 2* hitAngle;
+
+					Point2D center = new Point2D.Double(intersect.getBounds2D().getCenterX(),
+														intersect.getBounds2D().getCenterY());
+
+					double pushAngle = getAngleBetween(getAngleTo(getPos(), center));
+					double radius = getPos().distance(center);
+					
+					speed.setRotation(leaveAngle);
+					speed.multiply(Math.cos(pushAngle));
 					spin += Math.sin(pushAngle) / radius;
 				}
 			}
@@ -127,9 +154,9 @@ public class Explosion extends Drawable {
 			spin /= friction;
 		}
 		
-		private double getAngleTo(Point2D p2) {
-			double deltaX = p2.getX() - getPos().getX();
-			double deltaY = p2.getY() - getPos().getY();
+		private double getAngleTo(Point2D p, Point2D p2) {
+			double deltaX = p2.getX() - p.getX();
+			double deltaY = p2.getY() - p.getY();
 			double angle = Math.atan(deltaY / deltaX);
 			
 			if(deltaX < 0)
