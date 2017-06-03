@@ -34,7 +34,11 @@ public class Panel extends JPanel{
 		return new BufferedImage(buffer.getColorModel(), buffer.getRaster(), buffer.isAlphaPremultiplied(), null);
 	}
 	
-	public void addCamera(Camera camera) {
+	public Camera getCamera() {
+		return camera;
+	}
+
+	public void setCamera(Camera camera) {
 		this.camera = camera;
 	}
 	

@@ -47,8 +47,12 @@ public class Window extends JFrame{
 		return panel.getScreenShot();
 	}
 	
-	public void addCamera(Camera c) {
-		panel.addCamera(c);
+	public Camera getCamera() {
+		return panel.getCamera();
+	}
+
+	public void setCamera(Camera c) {
+		panel.setCamera(c);
 	}
 	
 	@Override

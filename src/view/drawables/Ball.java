@@ -4,56 +4,66 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.util.ArrayList;
 
+import view.window.Camera;
+
 public class Ball extends Drawable{
 
-	private static int LEFT = -1;		//gibt die Drehrichtung von Ball im Orbit um einen Node an.
-	private static int RIGHT = 1;		//je nach Richtung werden all Drehungen mit -1/+1 multipliziert -> keine Abfragen mehr
+	private static int LEFT = -1;				//gibt die Drehrichtung von Ball im Orbit um einen Node an.
+	private static int RIGHT = 1;				//je nach Richtung werden all Drehungen mit -1/+1 multipliziert -> keine Abfragen mehr
 	
-	private static double radius;		//Radius fuer Ball, eig Groesse wird mit setScale() gemacht
-	private double speed;				//Geschwindigkeit in Pixeln, mit der sich Ball pro Frame vorbewegt
-	private int fWidth;
+	private static double radius;				//Radius fuer Ball, eig Groesse wird mit setScale() gemacht
+	private double speed;						//Geschwindigkeit in Pixeln, mit der sich Ball pro Frame vorbewegt
+	private int fWidth, fHeight;
+	private Camera camera;
 
-	private boolean isInOrbit;			//ist Leertaste gedrueckt und bald wird ein Node umkreist?
-	private boolean isSpinning;			//Ball dreht sich um einen Node (in seinem Orbit)?
-	private boolean hasCrashed;			//Ball kolliediert nach Spielregeln mit anderem Objekt?
+	private boolean isInOrbit;					//ist Leertaste gedrueckt und bald wird ein Node umkreist?
+	private boolean isSpinning;					//Ball dreht sich um einen Node (in seinem Orbit)?
+	private boolean isSolid;					//Ball kann auch durchlaessig sein -> keine Crashs
+	private boolean hasCrashed;					//Ball kolliediert nach Spielregeln mit anderem Objekt?
 
-	private Node lastNode;				//haelt fest, um welchen Node sich Ball gerade dreht/zuletzt drehte
-	private int spinDirection;			//Vorfaktor, der bestimmt, ob Ball nach links/rechts dreht
-	private double spinRadius;			//Radius von Ball zu seinem Node in einem Orbit
-	private double spinAddition;		//Winkel, den Ball in Orbit immer 2x drehen wird um auf Kreisbahn zu bleiben
-	
-	double maxHookDist;
-	double maxSpinRadius;
-	
+	private Node lastNode;						//haelt fest, um welchen Node sich Ball gerade dreht/zuletzt drehte
+	private int spinDirection;					//Vorfaktor, der bestimmt, ob Ball nach links/rechts dreht
+	private double spinRadius, spinAddition;	//Radius von Ball zu seinem Node in einem Orbit
+												//Winkel, den Ball in Orbit immer 2x drehen wird um auf Kreisbahn zu bleiben
+	private double maxHookDist, maxSpinRadius;
+
 	//wenn Ball ausserhalb Spielfelds einen Orbit leavt, soll Player  Schutzzeit zum neu Orbit Joinen bekommen
 	private Long crashTimer;				//wann wurde Orbit geleavt, zum Vergleichen bei kommenden Crashes
 	private int crashBuffer;				//Intervall zum neu Joinen
 	
-	public Ball(int layer, Color color, int fWidth) {
+	private Explosion e;
 
+	public Ball(int layer, Color color, int fWidth, int fHeight, Camera camera) {
 		super(createShape(), layer);
+
 		setColor(color);
 		setPos(fWidth/2, 0);
 		setRotation(Math.PI * 3/2);
 		setScale(fWidth/240.0, fWidth/240.0);
 	
 		this.fWidth = fWidth;
+		this.fHeight = fHeight;
+		this.camera = camera;
 		
 		speed = 1;
+		radius = getShape().getBounds().getHeight()/2;
+
 		isInOrbit = false;
 		isSpinning = false;
+		isSolid = true;
 		hasCrashed = false;
-		lastNode = null;
 		
+		lastNode = null;
 		maxSpinRadius = fWidth/2;
 		maxHookDist = fWidth;
 		
 		crashTimer = new Long(0);
 		crashBuffer = 150;
+		
+		moveCamera();
 	}
 
 	private static Area createShape() {
-		radius = 6;
 		Area shape = 	 new Area(new Ellipse2D.Double	(-6, -6, 12, 12));
 		shape.subtract	(new Area(new Ellipse2D.Double	(-4, -4,  8,  8)));
 		shape.add		(new Area(new Ellipse2D.Double	(-2, -2,  4,  4)));
@@ -63,10 +73,12 @@ public class Ball extends Drawable{
 	}
 	
 	public double getSpeed() {return speed;}
+	public boolean isSolid() {return isSolid;}
 	public Node getNode() {return lastNode;}
 
 	public void setSpeed(double speed) {this.speed = speed;}
-
+	public void setSolid(boolean isSolid) {this.isSolid = isSolid;}
+	
 	public boolean isInOrbit() {return isInOrbit;}
 	public boolean isSpinning() {return isSpinning;}
 	public boolean hasCrashed() {return hasCrashed;}
@@ -165,17 +177,26 @@ public class Ball extends Drawable{
 		if(isSpinning)
 			lastNode.disconnect();
 		
-		//wenn Ball ausserhalb Spielfelds Orbit leavt, wird crashTimer geupdated
-		if(getPos().getX() < 40 - radius/2 || getPos().getX() > fWidth - 40)		//40 ist die Dicke der Mauer, hab grad keine Variable dafuer
+		//wenn Ball ausserhalb Spielfelds Orbit leavt, wird crashTimer reloaded
+		if(getPos().getX() - radius/2 < fWidth/32 || 
+		   getPos().getX() + radius/2 > fWidth*31/32 )		//32 ist die Dicke der Mauer, hab grad keine Variable dafuer
 			crashTimer = System.currentTimeMillis();
 		
 		isInOrbit = false;
 		isSpinning = false;
 	}
 	
+	public void updateMove() {
+		if(isSpinning)
+			spin();
+		else
+			move();
+		moveCamera();
+	}
+	
 	public void update(ArrayList<Drawable> solids) {
 		
-		if(isCrashing(solids)) {
+		if(isSolid && isCrashing(solids)) {
 			hasCrashed = true;
 			return;
 		}
@@ -204,14 +225,6 @@ public class Ball extends Drawable{
 			lastNode.setSpinSpeed(spinDirection * 2*Math.asin(speed/2 / spinRadius));
 			lastNode.connect();
 		}
-	}
-	
-	public void move2() {
-		
-		if(isSpinning)
-			spin();
-		else
-			move();
 	}
 	
 	//bewegt Ball um angegebene Distanz in Blickrichtung (rotation)
@@ -244,14 +257,51 @@ public class Ball extends Drawable{
 		}	
 		
 		//wenn Ball ausserhalb des Spielfelds oder fliegt nach unten
-		if(getPos().getX() < -40 || 
-		   getPos().getX() > fWidth + 40 ||
+		if(getPos().getX() - radius/2 < fWidth/32 || 
+		   getPos().getX() + radius/2 > fWidth*31/32 ||
 		   getPos().getY() > 2*fWidth)
 			//und nicht in Orbit und Schutzzeit abgelaufen oder Ball -> crash
 			if(!isInOrbit && crashTimer + crashBuffer < System.currentTimeMillis())
 				return true;
 		
 		return false;
+	}
+	
+	private void moveCamera() {
+		double posX = fWidth/2 + (getPos().getX() - fWidth/2) * 3/4;
+		double posY = getPos().getY() - fHeight/6;
+		camera.setLocation(posX, posY);
+	}
+	
+	@Override
+	public void fill(Graphics g) {
+		super.fill(g);
+		
+		if(e != null && e.isLaunched()) {
+			e.fill(g);
+		}
+	}
+	public void explode(ArrayList<Drawable> solids) {
+		
+		if(e != null && e.isLaunched())
+			return;
+		
+		setVisible(false);
+		
+		Point2D pos = new Point2D.Double(getPos().getX() + Math.cos(getRotation()) * -speed,
+										getPos().getY() + Math.sin(getRotation()) * -speed);
+		
+		e = new Explosion(Explosion.createShape(), 0);
+		e.setPos(pos);
+		e.setScale(0.06, 0.06);
+		e.setColor(lastNode != null ? lastNode.getColor() : Color.WHITE);
+		e.setParticles(50);
+		e.setSpeed(10f);
+		e.setFriction(1.05f);
+		e.setFriction(2f);
+		e.setDuration(5000);
+		
+		e.launch(solids);
 	}
 	
 	//ueberpruefe ob Ball anderes Shape schneidet -> BOOOM!

@@ -46,7 +46,7 @@ public class Drawable {
 	//Getter
 	
 	//berechnet Shape neu nach Position, Scale, etc.
-	public Area getShape() {
+	public Shape getShape() {
 
 		AffineTransform at = new AffineTransform();
 		at.rotate(rotation, pos.getX(), pos.getY());
@@ -58,22 +58,58 @@ public class Drawable {
 		return shape;
 	}
 	
-	public Color getColor() {return color;}
-	public int getLayer() {return layer;}
-	public Point2D getScale() {return (Point2D) scale.clone();}
-	public boolean isVisible() {return isVisible;}
-	public Point2D getPos() {return pos;}
-	public double getRotation() {return rotation;}
+	public Color getColor() {
+		return color;
+	}
+	
+	public int getLayer() {
+		return layer;
+	}
+	
+	public Point2D getScale() {
+		return (Point2D) scale.clone();
+	}
+	
+	public boolean isVisible() {
+		return isVisible;
+	}
+	
+	public Point2D getPos() {
+		return pos;
+	}
+	
+	public double getRotation() {
+		return rotation;
+	}
 
 	//Setter
-	public void setShape(Shape shape) {this.shape = shape;}
-	public void setColor(Color color) {this.color = color;}
+	public void setShape(Shape shape) {
+		this.shape = shape;
+	}
 	
-	public void setScale(double sx, double sy) {scale.setLocation(sx, sy);}
-	public void setVisible(boolean visible) {this.isVisible = visible;}
+	public void setColor(Color color) {
+		this.color = color;
+	}
+	
+	public void setScale(double sx, double sy) {
+		scale.setLocation(sx, sy);
+	}
+	
+	public void setScale(Point2D scale) {
+		this.scale.setLocation(scale.getX(), scale.getY());
+	}
+	
+	public void setVisible(boolean visible) {
+		this.isVisible = visible;
+	}
 
-	public void setPos(Point2D pos) {this.pos = pos;}
-	public void setPos(double posX, double posY) {pos.setLocation(posX, posY);}
+	public void setPos(Point2D pos) {
+		this.pos = pos;
+	}
+	
+	public void setPos(double posX, double posY) {
+		pos.setLocation(posX, posY);
+	}
 	
 	public void translate(double dX, double dY) {
 		pos.setLocation(pos.getX() + dX, pos.getY() + dY);
@@ -116,7 +152,8 @@ public class Drawable {
 	}
 	
 	public void courseColorTo(Color newColor, int speed) {
-		if(speed <= 0)
+		
+		if(speed < 1)
 			return;
 		
 		int dRed = newColor.getRed() - color.getRed();
@@ -134,11 +171,10 @@ public class Drawable {
 		return NEON_COLORS[(int) (Math.random() * NEON_COLORS.length)];
 	}
 	
-	public static Color nextNeonColor(Color lastColor) {
+	public static Color nextColor(Color lastColor) {
 		for(int i = 0; i < NEON_COLORS.length; i++)
 			if(lastColor.equals(NEON_COLORS[i]) && i+1 < NEON_COLORS.length)
 				return NEON_COLORS[i+1];
 		return NEON_COLORS[0];
 	}
-	
 }

@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
@@ -56,6 +57,8 @@ public class Rope extends Drawable{
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(getColor());
 		g2.setStroke(new BasicStroke(width));
+		
 		g2.draw(line);
+		g2.draw(new Ellipse2D.Double(line.getX2() - width, line.getY2() - width, 2*width, 2*width));
 	}
 }

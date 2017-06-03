@@ -32,8 +32,6 @@ public class Background extends Drawable{
 	@Override
 	public void fill(Graphics g) {
 		
-		long time = System.currentTimeMillis();
-
 		Graphics2D g2 = (Graphics2D) g;
 		
 		g2.setColor(Drawable.DARK_GRAY);
@@ -81,7 +79,6 @@ public class Background extends Drawable{
 			gridY++;
 		}
 		
-		System.out.println(System.currentTimeMillis() - time);
 		g2.setClip(null);
 	}
 	

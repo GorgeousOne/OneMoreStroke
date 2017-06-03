@@ -3,7 +3,12 @@ package control;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -42,13 +47,11 @@ public class Game {
 		
 		frame = w;
 		frame.clear();
-		frame.addCamera(camera = new Camera());
+		frame.setCamera(camera = new Camera());
 		initKeyInput();
 		initWindowStateInput();
-
-		//camera.setZoom(0.5f);
 		
-		ball = new Ball(1, Color.WHITE, fWidth);
+		ball = new Ball(1, Color.WHITE, fWidth, fHeight, camera);
 		ball.setSpeed(fWidth/frame.getFps() * 1.3);
 		
 		counter = new Counter(fWidth);
@@ -58,7 +61,7 @@ public class Game {
 		tail = new Tail(2, Color.WHITE, ball, fHeight, camera);
 		rope = new Rope(3, Color.WHITE, ball.getPos(), fWidth/150);
 		ring = new DashedRing(4, Drawable.ORANGE, 64, fWidth/200);
-		wall = new Wall(5, Drawable.RED, fWidth, fHeight, camera);
+		wall = new Wall(5, fWidth, fHeight, camera);
 		background = new Background(6, fWidth, fHeight, camera);
 
 		frame.addDrawable(ball);
@@ -109,39 +112,19 @@ public class Game {
 				t.start();
 				
 				//Spiel beenden bei crash;
-				if(ball.hasCrashed()) {
-					timer.cancel();
-				}
-				
-				//bewege Ball... Bewegungen nicht in extra Threads.
-				ball.move2();
-				moveCamera();
 				
 				//spawn neue nodes, wenn die letzten sichtbar sind
 				if(nodes.get(nodes.size()-1).isVisible())
 					spawnNode();
-
-				//check Nodes auf Sichtbarkeit + Updates(die Dinger drehen sich ja)
-				for(Node n : nodes)
-					if(getVisibleNodes().contains(n)) {
-						if(!n.isVisible())
-							n.setVisible(true);
-					}else if(n.isVisible())
-						n.setVisible(false);
 				
-				//restliche Updates... lies selber nach was die machen
+				if(!ball.hasCrashed())
+					ball.updateMove();
+				else
+					ball.explode(getSolids());
+				//updated alle Drawables und damit passive Eigenschaften aka Hintergrund Bewegung... Node-Drehen
 				frame.repaint();
 			}
 		}, 0, 1000/frame.getFps());
-	}
-	
-	//tolle bewegung muss ja auch iwo herkommen
-	private void moveCamera() {
-		double posX, posY;
-		
-		posX = fWidth/2 + (ball.getPos().getX() - fWidth/2) * 3/4;
-		posY = ball.getPos().getY() - fHeight/6;
-		camera.setLocation(posX, posY);
 	}
 	
 	//erzeugt neuen Node
@@ -156,7 +139,7 @@ public class Game {
 			posY = -4*counter.getPointDistance();						
 			scale = fWidth/5000d;
 			
-			n = new Node(0, Drawable.BLUE);
+			n = new Node(0, Drawable.BLUE, fHeight, camera);
 			n.setScale(scale, scale);
 			n.setPos(posX, posY);
 		
@@ -173,7 +156,7 @@ public class Game {
 			//posX = fWidth/2;
 			posY = lastNode.getPos().getY() - Math.random() * fWidth*2/5d - fWidth*2/5d;
 			
-			n = new Node(2, Drawable.nextNeonColor(lastNode.getColor()));
+			n = new Node(2, Drawable.nextColor(lastNode.getColor()), fHeight, camera);
 			n.setScale(scale, scale);
 			n.setPos(posX, posY);
 		}
@@ -186,8 +169,10 @@ public class Game {
 		ArrayList<Node> visNodes = new ArrayList<>();
 		
 		for(Node n : nodes)
-			if(Math.abs(camera.getY() - n.getPos().getY()) < fHeight/2/camera.getZoom() + n.getRadius())
+			if(n.isVisible())
 				visNodes.add(n);
+			//if(Math.abs(camera.getY() - n.getPos().getY()) < fHeight/2/camera.getZoom() + n.getRadius())
+			//	visNodes.add(n);
 		return visNodes;
 	}
 	
@@ -207,8 +192,10 @@ public class Game {
 	}
 	
 	private void onKeyPress(int key) {
-		if(key == KeyEvent.VK_SPACE)
+		if(key == KeyEvent.VK_SPACE && !ball.isInOrbit()) {
 			ball.enterOrbit(getVisibleNodes());
+			wall.setNextColor(Drawable.LIGHT_BLUE);
+		}
 		if(key == KeyEvent.VK_ESCAPE)
 			exit();
 	}
@@ -235,7 +222,39 @@ public class Game {
 			System.out.println("closing");
 	}
 	
+	@SuppressWarnings("unused")
+	private void compareScore() {
+	
+		System.out.println(System.getProperty("user.dir"));
+		File highscore = new File(System.getProperty("user.dir") + "/src/res/texts/highscore.txt");
+		Scanner s = null;
+		
+		try {
+			s = new Scanner(highscore);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		int score = Integer.parseInt(s.nextLine());
+		
+		if(score < counter.getScore()) {
+			try {
+				PrintWriter pw = new PrintWriter("/res/texts/highscore.txt", "UTF-8");
+				pw.write(Integer.toString(counter.getScore()));
+				pw.close();
+				System.out.println(counter.getScore() + " is new high");
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		
+		}else
+			System.out.println("yo noob");
+	}
+	
 	public void exit() {
+//		compareScore();
 		timer.cancel();
 		new Menu(frame);
 	}

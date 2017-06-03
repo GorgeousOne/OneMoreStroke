@@ -57,14 +57,13 @@ public class Tail extends Drawable{
 		path.moveTo(segments.get(0).getX(), segments.get(0).getY());
 		
 		for(int i = 1; i < segments.size()-3; i++)
-			if(segments.get(i).getY() > camera.getY() - sHeight/2 &&		//ist Punkt sichbar?
-			   segments.get(i).getY() < camera.getY() + sHeight/2 ||
-			   segments.get(i+1).getY() > camera.getY() - sHeight/2 &&		//ist naechster Punkt sichtbar?
-			   segments.get(i+1).getY() < camera.getY() + sHeight/2)
+			
+			if(Math.abs(camera.getY() - segments.get(i  ).getY()) < sHeight/2 ||	//ist Punkt sichbar?
+			   Math.abs(camera.getY() - segments.get(i+1).getY()) < sHeight/2)		//ist naechster Punkt sichtbar?
 				path.lineTo(segments.get(i).getX(), segments.get(i).getY());
 			else
 				path.moveTo(segments.get(i).getX(), segments.get(i).getY());
-			
+		
 		g2.draw(path);
 	}
 	

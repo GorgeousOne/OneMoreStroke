@@ -6,20 +6,28 @@ import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
+import view.window.Camera;
+
 public class Node extends Drawable{
 
 	private static double radius = 100;
+	
+	private int fHeight;
+	private Camera camera;
 	private double spin;
 	private boolean isConnected;
 	private boolean wasConnected;
 	private final Color primaryColor;
 	
-	public Node(int layer, Color color) {
+	public Node(int layer, Color color, int fHeight, Camera camera) {
 
 		super(rndSkin(), layer);
 		setVisible(false);
 		setColor(color);
 
+		this.fHeight = fHeight;
+		this.camera = camera;
+		
 		spin = Math.random() * Math.PI/16 - Math.PI/32;
 		isConnected = false;
 		wasConnected  = false;
@@ -43,11 +51,18 @@ public class Node extends Drawable{
 
 	@Override
 	public void fill(Graphics g) {
+	
+		rotate(spin);
+
+		if(!isVisible() && Math.abs(camera.getY() - getPos().getY()) - getRadius() < fHeight/2/camera.getZoom())
+			setVisible(true);
+		
+		if(isVisible() && Math.abs(camera.getY() - getPos().getY()) - getRadius() > fHeight/2/camera.getZoom())
+			setVisible(false);
 		
 		if(isConnected == true && getColor() != Color.WHITE)
 			brightenUp(5);
 		
-		rotate(spin);
 
 		super.fill(g);
 	}
