@@ -298,7 +298,6 @@ public class Ball extends Drawable{
 		e.setParticles(50);
 		e.setSpeed(10f);
 		e.setFriction(1.05f);
-		e.setFriction(2f);
 		e.setDuration(5000);
 		
 		e.launch(solids);

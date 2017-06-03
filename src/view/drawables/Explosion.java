@@ -1,12 +1,10 @@
 package view.drawables;
 
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 import view.Vector2D;
@@ -51,7 +49,6 @@ public class Explosion extends Drawable {
 				
 				for(int i = 0; i < duration/16; i++) {
 					
-					System.out.println(i);
 					for(Particle p : particles)
 						p.update(solids);
 					
@@ -91,10 +88,6 @@ public class Explosion extends Drawable {
 		
 		for(Particle p : particles)
 			p.fill(g);
-		
-		Graphics2D g2 = (Graphics2D) g;
-		g2.setColor(getColor());
-		g2.draw(new Rectangle2D.Double(getPos().getX(), getPos().getY(), 1, 1));
 	}
 	
 	private class Particle extends Drawable {
@@ -144,7 +137,6 @@ public class Explosion extends Drawable {
 			}
 			
 			speed.multiply(1.0/friction);
-			System.out.println(speed.getLength());
 		}
 		
 		private double getAngleTo(Point2D p, Point2D p2) {
