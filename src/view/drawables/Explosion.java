@@ -2,13 +2,11 @@ package view.drawables;
 
 import java.awt.Graphics;
 import java.awt.Polygon;
-import java.awt.Shape;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 import view.Vector2D;
-
 
 public class Explosion extends Drawable {
 
@@ -18,7 +16,7 @@ public class Explosion extends Drawable {
 	private int pCount;
 	private float pSpeed, pFriction;
 	
-	public Explosion(Shape shape, int layer) {
+	public Explosion(Area shape, int layer) {
 		super(shape, layer);
 		
 		particles = new ArrayList<>();
@@ -96,7 +94,7 @@ public class Explosion extends Drawable {
 		private Vector2D speed;
 		private double friction;
 		
-		public Particle(Shape shape, float speed, float friction) {
+		public Particle(Area shape, float speed, float friction) {
 			super(shape, 0);
 			
 			setRotation(Math.random() * 2*Math.PI);
@@ -162,12 +160,12 @@ public class Explosion extends Drawable {
 		}
 	}
 	
-	public static Polygon createShape() {
+	public static Area createShape() {
 		
 		int[] x = {0, (int) (100 * Math.cos(Math.PI/6)), 
 					 (int) (-100 * Math.cos(Math.PI/6))};
 		int[] y = {(int) (-100), (int) (100 * Math.sin(Math.PI/6)),
 								 (int) (100 * Math.sin(Math.PI/6))};
-		return new Polygon(x, y, 3);
+		return new Area(new Polygon(x, y, 3));
 	}
 }

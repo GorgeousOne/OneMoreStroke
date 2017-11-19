@@ -5,7 +5,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 
-public class Drawable {
+public class Drawable2 {
 
 	public static final Color BLUE = new Color(36, 140, 240);
 	public static final Color YELLOW = new Color(255, 200, 0);
@@ -23,24 +23,24 @@ public class Drawable {
 	private static final Color[] NEON_COLORS = {BLUE, YELLOW, LIGHT_BLUE, RED, 
 												GREEN, ORANGE, PURPLE};
 	
-	private Shape shape;
+	private AffineTransform transform;
+	private Area shape;
 	private Color color;
 	private int layer;
-	private Point2D scale;
 	private boolean isVisible;
 
-	private Point2D pos;
 	private double rotation;
 	
-	public Drawable(Area shape, int layer) {
+	public Drawable2(Area shape, int layer) {
+		
+		this.transform = new AffineTransform();
+		
 		this.shape = shape;
 		this.layer = layer;
 		this.color = Color.BLACK;
-		this.scale = new Point2D.Float(1f, 1f);
 		this.isVisible = true;
 
 		this.rotation = 0;
-		this.pos = new Point2D.Double(0, 0);
 	}
 	
 	//Getter
@@ -48,13 +48,13 @@ public class Drawable {
 	//berechnet Shape neu nach Position, Scale, etc.
 	public Area getShape() {
 
-		AffineTransform at = new AffineTransform();
+		/*AffineTransform at = new AffineTransform();
 		at.rotate(rotation, pos.getX(), pos.getY());
 		at.translate(pos.getX(), pos.getY());
-		at.scale(scale.getX(), scale.getY());	//scale nur hier
+		at.scale(scale.getX(), scale.getY());	//scale nur hier*/
 
 		Area shape = new Area(this.shape);
-		shape.transform(at);
+		shape.transform(transform);
 		return shape;
 	}
 	
@@ -67,7 +67,7 @@ public class Drawable {
 	}
 	
 	public Point2D getScale() {
-		return (Point2D) scale.clone();
+		return new Point2D.Double(transform.getScaleX(), transform.getScaleY());
 	}
 	
 	public boolean isVisible() {
@@ -75,7 +75,7 @@ public class Drawable {
 	}
 	
 	public Point2D getPos() {
-		return pos;
+		return new Point2D.Double(transform.getTranslateX(), transform.getTranslateY());
 	}
 	
 	public double getRotation() {
@@ -83,7 +83,8 @@ public class Drawable {
 	}
 
 	//Setter
-	public void setShape(Shape shape) {
+	public void setShape(Area shape) {
+		shape.transform(transform);
 		this.shape = shape;
 	}
 	
@@ -92,11 +93,13 @@ public class Drawable {
 	}
 	
 	public void setScale(double sx, double sy) {
-		scale.setLocation(sx, sy);
+		transform.scale(sx / transform.getScaleX(),
+						sy / transform.getScaleY());
 	}
 	
 	public void setScale(Point2D scale) {
-		this.scale.setLocation(scale.getX(), scale.getY());
+		transform.scale(scale.getX() / transform.getScaleX(),
+						scale.getY() / transform.getScaleY());
 	}
 	
 	public void setVisible(boolean visible) {
@@ -104,15 +107,17 @@ public class Drawable {
 	}
 
 	public void setPos(Point2D pos) {
-		this.pos = pos;
+		transform.translate(pos.getX() - transform.getTranslateX(),
+							pos.getY() - transform.getTranslateY());
 	}
 	
 	public void setPos(double posX, double posY) {
-		pos.setLocation(posX, posY);
+		transform.translate(posX - transform.getTranslateX(), 
+							posY - transform.getTranslateY());
 	}
 	
-	public void translate(double dX, double dY) {
-		pos.setLocation(pos.getX() + dX, pos.getY() + dY);
+	public void translate(double dx, double dy) {
+		transform.translate(dx, dy);
 	}
 	
 	public void setRotation(double rotation) {
@@ -125,6 +130,9 @@ public class Drawable {
 	}
 
 	public void rotate(double rotation) {
+		
+		transform.rotate(rotation, getPos().getX(), getPos().getY());
+		
 		this.rotation += rotation;
 		
 		if(getRotation() > 2*Math.PI)

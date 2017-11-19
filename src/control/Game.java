@@ -39,6 +39,7 @@ public class Game {
 	
 	private Timer timer;
 	private int fWidth, fHeight;	//Groesse des Frames fuer JPanel
+	private boolean isStopped = false;
 
 	public Game(Window w) {
 
@@ -104,14 +105,14 @@ public class Game {
 		};
 		
 		timer.scheduleAtFixedRate(new TimerTask() {
-			
 			@Override
 			public void run() {
 				
+				if(ball.hasCrashed() && !isStopped)
+					exit(false);
+				
 				Thread t = new Thread(r);
 				t.start();
-				
-				//Spiel beenden bei crash;
 				
 				//spawn neue nodes, wenn die letzten sichtbar sind
 				if(nodes.get(nodes.size()-1).isVisible())
@@ -121,6 +122,7 @@ public class Game {
 					ball.updateMove();
 				else
 					ball.explode(getSolids());
+				
 				//updated alle Drawables und damit passive Eigenschaften aka Hintergrund Bewegung... Node-Drehen
 				frame.repaint();
 			}
@@ -192,18 +194,19 @@ public class Game {
 	}
 	
 	private void onKeyPress(int key) {
-		if(key == KeyEvent.VK_SPACE && !ball.isInOrbit()) {
+		if(key == KeyEvent.VK_SPACE && !ball.isInOrbit() && !ball.hasCrashed()	) {
 			ball.enterOrbit(getVisibleNodes());
 			wall.setNextColor(Drawable.LIGHT_BLUE);
 		}
 		if(key == KeyEvent.VK_ESCAPE)
-			exit();
+			exit(true);
 	}
 	
 	private void onKeyRelease(int key) {
 		if(key == KeyEvent.VK_SPACE && ball.isInOrbit()) {
 			ball.leaveOrbit(getSolids());
 			ring.setVisible(false);
+			wall.setNextColor(Drawable.RED);
 		}
  	}
 	
@@ -216,7 +219,7 @@ public class Game {
 	private void onWindowAction(int state) {
 		//TODO was ausdenken
 		if(state == WindowEvent.WINDOW_ICONIFIED)
-			this.exit();
+			this.exit(true);
 		
 		if(state == WindowEvent.WINDOW_CLOSING)
 			System.out.println("closing");
@@ -253,9 +256,22 @@ public class Game {
 			System.out.println("yo noob");
 	}
 	
-	public void exit() {
+	public void exit(boolean abrupredly) {
 //		compareScore();
-		timer.cancel();
-		new Menu(frame);
+		isStopped = true;
+		
+		if(abrupredly) {
+			timer.cancel();
+			new Menu(frame);
+			return;
+		}
+		
+		new Timer().schedule(new TimerTask() {
+			@Override
+			public void run() {
+				timer.cancel();
+				new Menu(frame);
+			}
+		}, 2500);	//TODO create variable
 	}
 }

@@ -22,8 +22,8 @@ public class Panel extends JPanel{
 	private Camera camera;
 	
 	public Panel() {
+		super();
 		
-		System.out.println(getLayout());
 		fWidth = fHeight = 1;
 		buffer = new BufferedImage(fWidth, fHeight, BufferedImage.TYPE_3BYTE_BGR);
 		shapes = new ArrayList<>();

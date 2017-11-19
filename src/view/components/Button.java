@@ -9,6 +9,7 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -18,24 +19,25 @@ public class Button extends JComponent {
 	//TODO reupload
 	private static final long serialVersionUID = 1L;
 	
-	private ActionListener actionListener;
+	private ArrayList<ActionListener> als;
 	private boolean isPressed = false;
 	private Thread t;
 	private Color fading;
 	
 	public Button() {
-		
 		super();
 		setPreferredSize(new Dimension(50, 50));
+
+		als = new ArrayList<>();
 		fading = getBackground();
 		
 		initMouseListener();
 	}
 
 	public void addActionListener(ActionListener al) {
-		actionListener = al;
+		als.add(al);
 	}
-
+		
 	private void animation(boolean gotClicked) {
 		
 		if(t != null)
@@ -57,7 +59,8 @@ public class Button extends JComponent {
 				isPressed = false;
 
 				if(gotClicked)
-					actionListener.actionPerformed(null);
+					for(ActionListener al : als)
+						al.actionPerformed(null);
 			}
 		});
 		t.start();
@@ -123,8 +126,9 @@ public class Button extends JComponent {
 			public void mouseReleased(MouseEvent e) {
 				boolean gotClicked = getBounds().contains(new Point(e.getX() + getX(), e.getY() + getY()));
 				
-				if(SwingUtilities.isLeftMouseButton(e))
+				if(SwingUtilities.isLeftMouseButton(e)) {
 					animation(gotClicked);
+				}
 			}
 		});
 	}

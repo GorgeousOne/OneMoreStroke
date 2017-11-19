@@ -19,7 +19,7 @@ public class Menu {
 	private Button start;
 	
 	private int fWidth, fHeight;
-	private boolean hasStopped = false;
+	private boolean isStopped = false;
 	
 	private Background bg;
 	private Wall wall;
@@ -66,7 +66,7 @@ public class Menu {
 	}
 	
 	public void stop() {
-		hasStopped = true;
+		isStopped = true;
 	}
 	
 	private void loop() {
@@ -76,7 +76,7 @@ public class Menu {
 			@Override
 			public void run() {
 				
-				if(hasStopped)
+				if(isStopped)
 					t.cancel();
 				
 				frame.repaint();

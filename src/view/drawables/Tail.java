@@ -76,7 +76,10 @@ public class Tail extends Drawable{
 		}
 		
 		public void update() {
-			segments.add(new Point2D.Double(ball.getPos().getX(), ball.getPos().getY()));
+			if(!ball.hasCrashed())
+				segments.add(new Point2D.Double(ball.getPos().getX(), ball.getPos().getY()));
+			if(segments.size() > 200)
+				segments.remove(0);
 		}
 	}
 }

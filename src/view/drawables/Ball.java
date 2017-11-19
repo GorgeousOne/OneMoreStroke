@@ -294,8 +294,8 @@ public class Ball extends Drawable{
 		e = new Explosion(Explosion.createShape(), 0);
 		e.setPos(pos);
 		e.setScale(0.06, 0.06);
-		e.setColor(lastNode != null ? lastNode.getColor() : Color.WHITE);
-		e.setParticles(50);
+		e.setColor(lastNode != null ? lastNode.getPrimaryColor(): Color.WHITE);
+		e.setParticles(30);
 		e.setSpeed(10f);
 		e.setFriction(1.05f);
 		e.setDuration(5000);
