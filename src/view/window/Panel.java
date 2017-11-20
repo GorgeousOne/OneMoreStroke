@@ -7,6 +7,8 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Iterator;
+
 import javax.swing.JPanel;
 
 import view.drawables.Drawable;
@@ -15,8 +17,8 @@ public class Panel extends JPanel{
 
 	private static final long serialVersionUID = 1L;
 
-	private ArrayList <Drawable> shapes;
-
+	private ArrayList<Drawable> shapes;
+	
  	private int fWidth, fHeight;
 	private BufferedImage buffer;
 	private Camera camera;
@@ -27,6 +29,7 @@ public class Panel extends JPanel{
 		fWidth = fHeight = 1;
 		buffer = new BufferedImage(fWidth, fHeight, BufferedImage.TYPE_3BYTE_BGR);
 		shapes = new ArrayList<>();
+
 		camera = new Camera();
 	}
 	
@@ -91,14 +94,11 @@ public class Panel extends JPanel{
 		
 		g2.translate(fWidth/2 - camera.getX(),fHeight/2 -camera.getY());
 
-		for(Drawable d : shapes) {
-			try {
-				d.fill(g2);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-
+		Iterator<Drawable> iter = shapes.iterator();
+		
+		while(iter.hasNext())
+			iter.next().fill(g2);
+				
 		g.drawImage(buffer, 0, 0, this);
 		g2.dispose();
 	}
